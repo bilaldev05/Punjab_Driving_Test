@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/traffic_sign.dart';
 import '../services/api_service.dart';
+import '../language.dart';
 
 class TrafficSignsScreen extends StatefulWidget {
   const TrafficSignsScreen({super.key});
@@ -34,7 +35,22 @@ class _TrafficSignsScreenState extends State<TrafficSignsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Traffic Signs")),
+      appBar: AppBar(
+        title: ValueListenableBuilder<bool>(
+          valueListenable: isUrdu,
+          builder: (_, value, __) => Text(value ? "ٹریفک کے اشارے" : "Traffic Signs"),
+        ),
+        actions: [
+          IconButton(
+            icon: ValueListenableBuilder<bool>(
+              valueListenable: isUrdu,
+              builder: (_, value, __) => Text(value ? "EN" : "اردو",
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            onPressed: () => isUrdu.value = !isUrdu.value,
+          )
+        ],
+      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : signs.isEmpty
@@ -64,25 +80,27 @@ class _TrafficSignsScreenState extends State<TrafficSignsScreen> {
                               child: Image.network(
                                 sign.image,
                                 fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.broken_image, size: 50, color: Colors.red),
                               ),
                             ),
                             const SizedBox(height: 8),
-                            Text(
-                              sign.name,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                            ValueListenableBuilder<bool>(
+                              valueListenable: isUrdu,
+                              builder: (_, value, __) => Text(
+                                value ? sign.nameUr : sign.name,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 16),
+                                textAlign: TextAlign.center,
                               ),
-                              textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 6),
-                            Text(
-                              sign.description,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey,
+                            ValueListenableBuilder<bool>(
+                              valueListenable: isUrdu,
+                              builder: (_, value, __) => Text(
+                                value ? sign.descriptionUr : sign.description,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontSize: 13, color: Colors.grey),
                               ),
                             ),
                           ],

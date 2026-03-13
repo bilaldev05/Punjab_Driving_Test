@@ -17,19 +17,14 @@ app = FastAPI(title="Punjab Driving Test API")
 # CORS CONFIGURATION
 # -----------------------------
 
-origins = [
-    "http://localhost",
-    "http://localhost:3000",
-    "http://127.0.0.1:8000",
-    "*"
-]
+
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,      # allowed origins
+    allow_origins=["*"],  # for testing allow all
     allow_credentials=True,
-    allow_methods=["*"],        # allow all methods
-    allow_headers=["*"],        # allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # -----------------------------
