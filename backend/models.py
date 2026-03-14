@@ -6,24 +6,32 @@ from datetime import datetime
 # -----------------------------
 # Question Model
 # -----------------------------
+
+
 class Question(BaseModel):
+
     question: str
+    questionUr: str
+
     optionA: str
+    optionAUr: str
+
     optionB: str
+    optionBUr: str
+
     optionC: str
+    optionCUr: str
+
     optionD: str
+    optionDUr: str
+
     correctAnswer: str
+
     explanation: str
+    explanationUr: str
+
     category: str
-
-    # image based questions
-    image: Optional[str] = None
-
-    # difficulty for smart exams
-    difficulty: Optional[str] = "easy"
-
-    # language support
-    language: Optional[str] = "en"
+    test_number: int
 
 
 # -----------------------------

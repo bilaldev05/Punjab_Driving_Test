@@ -1,25 +1,47 @@
+// models/traffic_sign.dart
 class TrafficSign {
-  final String name;
-  final String description;
+  final String name;        // question in English
+  final String nameUr;      // question in Urdu
   final String image;
-
-  // Urdu fields
-  final String nameUr;
-  final String descriptionUr;
+  final String optionA;
+  final String optionAUr;
+  final String optionB;
+  final String optionBUr;
+  final String optionC;
+  final String optionCUr;
+  final String optionD;
+  final String optionDUr;
+  final String correctAnswer;
 
   TrafficSign({
     required this.name,
-    required this.description,
-    required this.image,
     required this.nameUr,
-    required this.descriptionUr,
+    required this.image,
+    required this.optionA,
+    required this.optionAUr,
+    required this.optionB,
+    required this.optionBUr,
+    required this.optionC,
+    required this.optionCUr,
+    required this.optionD,
+    required this.optionDUr,
+    required this.correctAnswer,
   });
 
-  factory TrafficSign.fromJson(Map<String, dynamic> json) => TrafficSign(
-        name: json['name'],
-        description: json['description'],
-        image: json['image'],
-        nameUr: json['nameUr'] ?? json['name'],
-        descriptionUr: json['descriptionUr'] ?? json['description'],
-      );
+  factory TrafficSign.fromJson(Map<String, dynamic> json) {
+    return TrafficSign(
+      name: json["question"] ?? "",
+      nameUr: json["questionUr"] ?? "",
+      image: json["image"] ?? "default.png",
+      optionA: json["optionA"] ?? "",
+      optionAUr: json["optionAUr"] ?? "",
+      optionB: json["optionB"] ?? "",
+      optionBUr: json["optionBUr"] ?? "",
+      optionC: json["optionC"] ?? "",
+      optionCUr: json["optionCUr"] ?? "",
+      optionD: json["optionD"] ?? "",
+      optionDUr: json["optionDUr"] ?? "",
+      correctAnswer: json["correctAnswer"] ?? "",
+    );
+  }
 }
