@@ -12,7 +12,7 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
   backgroundColor: Colors.white,
-  elevation: 2, // subtle shadow
+  elevation: 2, 
   centerTitle: true,
   title: Text(
     'Punjab Driving Test',
