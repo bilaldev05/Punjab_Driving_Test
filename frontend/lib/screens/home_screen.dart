@@ -17,13 +17,13 @@ class HomeScreen extends StatelessWidget {
   title: Text(
     'Punjab Driving Test',
     style: TextStyle(
-      color: Colors.blueAccent.shade700, // accent color
+      color: Colors.blueAccent.shade700, 
       fontSize: 20,
       fontWeight: FontWeight.bold,
       letterSpacing: 0.5,
     ),
   ),
-  iconTheme: IconThemeData(color: Colors.blueAccent.shade700), // back button color
+  iconTheme: IconThemeData(color: Colors.blueAccent.shade700), 
   actions: [
     Padding(
       padding: const EdgeInsets.only(right: 16),
