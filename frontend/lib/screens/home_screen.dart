@@ -40,7 +40,7 @@ class HomeScreen extends StatelessWidget {
   ],
   shape: const RoundedRectangleBorder(
     borderRadius: BorderRadius.vertical(
-      bottom: Radius.circular(12), // subtle rounded bottom
+      bottom: Radius.circular(12),
     ),
   ),
 ),
