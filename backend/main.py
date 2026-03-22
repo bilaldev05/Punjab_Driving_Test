@@ -13,11 +13,6 @@ from routes import (
 
 app = FastAPI(title="Punjab Driving Test API")
 
-# -----------------------------
-# CORS CONFIGURATION
-# -----------------------------
-
-
 
 app.add_middleware(
     CORSMiddleware,
