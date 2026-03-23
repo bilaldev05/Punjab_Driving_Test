@@ -4,7 +4,7 @@ import '../models/questions.dart';
 import '../models/traffic_sign.dart';
 
 class ApiService {
-  static const baseUrl = "http://127.0.0.1:8000"; // Your FastAPI URL
+  static const baseUrl = "http://127.0.0.1:8000"; 
 
   // Fetch Rules Test by test number
   static Future<List<Question>> getRulesTest(int testNumber) async {
