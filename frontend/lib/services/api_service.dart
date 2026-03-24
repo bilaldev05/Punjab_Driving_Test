@@ -20,7 +20,7 @@ class ApiService {
     }
   }
 
-  // Fetch Signs Test by test number
+  
   static Future<List<TrafficSign>> getTrafficSigns({
     int testNumber = 1,
     int limit = 20,
