@@ -36,4 +36,16 @@ class ApiService {
       throw Exception("Failed to load traffic signs");
     }
   }
+ static Future<String> getRulebookPdfUrl() async {
+    final String pdfUrl = "http://192.168.100.153:8000/rulebook/pdf";
+
+    // Optional: check if the PDF is reachable
+    final res = await http.head(url); // lightweight request
+
+    if (res.statusCode == 200) {
+      return url.toString(); // return PDF URL
+    } else {
+      throw Exception("Failed to load Rulebook PDF");
+    }
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'practice_test_screen.dart';
 import 'traffic_signs_screen.dart';
+import 'rule_book_pdf.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -11,47 +12,60 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-  backgroundColor: Colors.white,
-  elevation: 2, 
-  centerTitle: true,
-  title: Text(
-    'Punjab Driving Test',
-    style: TextStyle(
-      color: Colors.blueAccent.shade700, 
-      fontSize: 20,
-      fontWeight: FontWeight.bold,
-      letterSpacing: 0.5,
-    ),
-  ),
-  iconTheme: IconThemeData(color: Colors.blueAccent.shade700), 
-  actions: [
-    Padding(
-      padding: const EdgeInsets.only(right: 16),
-      child: CircleAvatar(
-        radius: 16,
-        backgroundColor: Colors.blueAccent.shade100,
-        child: const Icon(
-          Icons.person,
-          size: 18,
-          color: Colors.white,
+        backgroundColor: Colors.white,
+        elevation: 2,
+        centerTitle: true,
+        title: Text(
+          'Punjab Driving Test',
+          style: TextStyle(
+            color: Colors.blueAccent.shade700,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        iconTheme: IconThemeData(color: Colors.blueAccent.shade700),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: CircleAvatar(
+              radius: 16,
+              backgroundColor: Colors.blueAccent.shade100,
+              child: const Icon(Icons.person, size: 18, color: Colors.white),
+            ),
+          ),
+        ],
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(12),
+          ),
         ),
       ),
-    ),
-  ],
-  shape: const RoundedRectangleBorder(
-    borderRadius: BorderRadius.vertical(
-      bottom: Radius.circular(12),
-    ),
-  ),
-),
+
       body: SingleChildScrollView(
-        
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            
-            const SizedBox(height: 10),
+
+            /// 🔥 FEATURE CARD (RULE BOOK)
+            _FeatureCard(
+              title: "Rule Book",
+              subtitle: "Learn all Punjab traffic rules",
+              icon: Icons.menu_book_rounded,
+              color: Colors.deepPurple,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const RuleBookPdfScreen(),
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 20),
+
+            /// 📘 RULE TESTS
             Row(
               children: [
                 Icon(Icons.rule, color: accentColor, size: 22),
@@ -67,6 +81,7 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
+
             ...List.generate(10, (index) {
               int testNumber = index + 1;
               return _ProfessionalCard(
@@ -85,24 +100,26 @@ class HomeScreen extends StatelessWidget {
                 badgeText: "$testNumber",
               );
             }),
+
             const SizedBox(height: 24),
 
-            // Signs Section
+            /// 🚦 SIGN TESTS
             Row(
               children: [
-                Icon(Icons.traffic, color: accentColor, size: 22),
+                const Icon(Icons.traffic, color: Colors.orange, size: 22),
                 const SizedBox(width: 8),
                 const Text(
                   "Signs Tests",
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blueAccent,
+                    color: Colors.orange,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
+
             ...List.generate(10, (index) {
               int testNumber = index + 1;
               return _ProfessionalCard(
@@ -112,14 +129,16 @@ class HomeScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const TrafficSignsScreen(),
+                      builder: (_) =>
+                          TrafficSignsScreen(testNumber: testNumber),
                     ),
                   );
                 },
-                accentColor: accentColor,
+                accentColor: Colors.orange,
                 badgeText: "$testNumber",
               );
             }),
+
             const SizedBox(height: 24),
           ],
         ),
@@ -128,7 +147,91 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-/// Clean, professional card without outline
+//////////////////////////////////////////////////////////////////
+/// 🔥 FEATURE CARD (TOP BIG CARD)
+//////////////////////////////////////////////////////////////////
+
+class _FeatureCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _FeatureCard({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 90,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [color.withOpacity(0.8), color],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            )
+          ],
+        ),
+        child: Row(
+          children: [
+            const SizedBox(width: 16),
+            CircleAvatar(
+              radius: 26,
+              backgroundColor: Colors.white,
+              child: Icon(icon, color: color, size: 28),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, color: Colors.white),
+            const SizedBox(width: 16),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+//////////////////////////////////////////////////////////////////
+/// 💎 PROFESSIONAL LIST CARD
+//////////////////////////////////////////////////////////////////
+
 class _ProfessionalCard extends StatefulWidget {
   final String title;
   final IconData icon;
@@ -162,7 +265,7 @@ class _ProfessionalCardState extends State<_ProfessionalCard> {
       onTapCancel: () => setState(() => _isPressed = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        height: 60, // reduced height
+        height: 60,
         margin: const EdgeInsets.symmetric(vertical: 5),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -179,7 +282,7 @@ class _ProfessionalCardState extends State<_ProfessionalCard> {
           children: [
             const SizedBox(width: 14),
             CircleAvatar(
-              radius: 18, // smaller badge
+              radius: 18,
               backgroundColor: widget.accentColor,
               child: widget.icon == Icons.traffic
                   ? const Icon(Icons.traffic, color: Colors.white, size: 20)
@@ -188,7 +291,6 @@ class _ProfessionalCardState extends State<_ProfessionalCard> {
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
                       ),
                     ),
             ),
@@ -198,12 +300,13 @@ class _ProfessionalCardState extends State<_ProfessionalCard> {
                 widget.title,
                 style: const TextStyle(
                   color: Colors.black87,
-                  fontSize: 16, // smaller text
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-            Icon(Icons.arrow_forward_ios, color: widget.accentColor, size: 16),
+            Icon(Icons.arrow_forward_ios,
+                color: widget.accentColor, size: 16),
             const SizedBox(width: 14),
           ],
         ),
