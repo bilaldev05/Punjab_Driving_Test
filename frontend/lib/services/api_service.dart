@@ -1,12 +1,13 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import '../models/questions.dart';
 import '../models/traffic_sign.dart';
 
 class ApiService {
-  static const baseUrl = "http://127.0.0.1:8000"; 
+  static const baseUrl = "http://192.168.100.153:8000"; // Use your LAN IP for Web
 
-  
+  // Fetch rules test questions
   static Future<List<Question>> getRulesTest(int testNumber) async {
     final response = await http.get(
       Uri.parse("$baseUrl/exam/rules/$testNumber"),
@@ -20,7 +21,7 @@ class ApiService {
     }
   }
 
-  
+  // Fetch traffic signs
   static Future<List<TrafficSign>> getTrafficSigns({
     int testNumber = 1,
     int limit = 20,
@@ -36,16 +37,22 @@ class ApiService {
       throw Exception("Failed to load traffic signs");
     }
   }
- static Future<String> getRulebookPdfUrl() async {
-    final String pdfUrl = "http://192.168.100.153:8000/rulebook/pdf";
 
-    // Optional: check if the PDF is reachable
-    final res = await http.head(url); // lightweight request
+  // Fetch Rulebook PDF as bytes (Web-friendly)
+  static Future<Uint8List> getRulebookPdfBytes() async {
+    final url = Uri.parse("$baseUrl/rulebook/pdf");
 
-    if (res.statusCode == 200) {
-      return url.toString(); // return PDF URL
-    } else {
-      throw Exception("Failed to load Rulebook PDF");
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        return response.bodyBytes; // return PDF bytes for SfPdfViewer.memory
+      } else {
+        throw Exception(
+            "Failed to fetch Rulebook PDF. Status: ${response.statusCode}");
+      }
+    } catch (e) {
+      throw Exception("Error fetching PDF: $e");
     }
   }
 }
