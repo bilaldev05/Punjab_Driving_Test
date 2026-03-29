@@ -21,7 +21,7 @@ class ApiService {
     }
   }
 
-  // Fetch traffic signs
+  
   static Future<List<TrafficSign>> getTrafficSigns({
     int testNumber = 1,
     int limit = 20,
