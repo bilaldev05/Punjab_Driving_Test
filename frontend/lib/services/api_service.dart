@@ -38,7 +38,7 @@ class ApiService {
     }
   }
 
-  // Fetch Rulebook PDF as bytes (Web-friendly)
+  
   static Future<Uint8List> getRulebookPdfBytes() async {
     final url = Uri.parse("$baseUrl/rulebook/pdf");
 

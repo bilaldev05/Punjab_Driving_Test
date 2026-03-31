@@ -41,7 +41,7 @@ def download_rulebook():
     )
 
 
-# ✅ 3. STREAM PDF (for large files / advanced viewers)
+#  3. STREAM PDF (for large files / advanced viewers)
 @router.get("/stream")
 def stream_rulebook():
     if not os.path.exists(PDF_PATH):
