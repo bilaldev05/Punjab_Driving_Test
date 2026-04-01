@@ -1,11 +1,12 @@
 import 'dart:convert';
-import 'dart:typed_data';
+
+import 'package:frontend/models/rule.dart';
 import 'package:http/http.dart' as http;
 import '../models/questions.dart';
 import '../models/traffic_sign.dart';
 
 class ApiService {
-  static const baseUrl = "http://192.168.100.153:8000"; // Use your LAN IP for Web
+  static const baseUrl = "http://127.0.0.1:8000"; // Use your LAN IP for Web
 
   // Fetch rules test questions
   static Future<List<Question>> getRulesTest(int testNumber) async {
@@ -39,20 +40,28 @@ class ApiService {
   }
 
   
-  static Future<Uint8List> getRulebookPdfBytes() async {
-    final url = Uri.parse("$baseUrl/rulebook/pdf");
-
+  static Future<List<Rule>> getRules() async {
     try {
-      final response = await http.get(url);
+      final response = await http.get(
+        Uri.parse("$baseUrl/rules/"),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      );
 
       if (response.statusCode == 200) {
-        return response.bodyBytes; // return PDF bytes for SfPdfViewer.memory
+        final data = jsonDecode(response.body);
+
+        // ✅ Expecting: { "data": [...] }
+        final List list = data['data'];
+
+        return list.map((e) => Rule.fromJson(e)).toList();
       } else {
-        throw Exception(
-            "Failed to fetch Rulebook PDF. Status: ${response.statusCode}");
+        throw Exception("Failed to load rules: ${response.statusCode}");
       }
     } catch (e) {
-      throw Exception("Error fetching PDF: $e");
+      throw Exception("API Error: $e");
     }
   }
+
 }

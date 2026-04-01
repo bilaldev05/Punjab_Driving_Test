@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'practice_test_screen.dart';
 import 'traffic_signs_screen.dart';
-import 'rule_book_pdf.dart';
+import 'rule_book.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -57,7 +57,7 @@ class HomeScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const RuleBookPdfScreen(),
+                    builder: (_) => const RuleBookScreen(),
                   ),
                 );
               },
