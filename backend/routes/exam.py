@@ -21,9 +21,6 @@ def get_rules_test(test_number: int):
     return [question_serializer(q) for q in questions]
 
 
-# -----------------------------
-# SIGNS TEST
-# -----------------------------
 
 @router.get("/signs/{test_number}")
 def get_signs_test(test_number: int):
