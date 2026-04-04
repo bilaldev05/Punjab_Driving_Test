@@ -1,48 +1,36 @@
 class Rule {
-  String title;
-  List<String> content;
+  final String title;
+  final List<String> content;
+  final int? chapterNumber;
 
-  String? titleUr;
-  List<String>? contentUr;
+  final String? titleUr;
+  final List<String>? contentUr;
+
+  final List<dynamic>? sections;
 
   Rule({
     required this.title,
     required this.content,
+    this.chapterNumber,
     this.titleUr,
     this.contentUr,
+    this.sections,
   });
 
   factory Rule.fromJson(Map<String, dynamic> json) {
     return Rule(
-      title: json['title'] ?? "",
-
-      // ✅ Handle BOTH 'content' and 'sections'
-      content: _convertToList(
-        json['content'] ?? json['sections'],
-      ),
-
-      // ✅ Handle Urdu title (support both naming styles)
-      titleUr: json['title_ur'] ?? json['titleUr'],
-
-      // ✅ Handle BOTH 'content_ur' and 'sections_ur'
-      contentUr: json['content_ur'] != null
-          ? _convertToList(json['content_ur'])
-          : json['sections_ur'] != null
-              ? _convertToList(json['sections_ur'])
-              : null,
+      title: json['title']?.toString() ?? "",
+      chapterNumber: _toInt(json['chapter'] ?? json['chapter_number']),
+      content: _convertToList(json['content'] ?? []),
+      titleUr: json['title_ur']?.toString(),
+      contentUr: _convertToList(json['content_ur'] ?? json['sections_ur'] ?? []),
+      sections: json['sections'] ?? [],
     );
   }
 
-  /// 🔥 Handles BOTH String and List safely
   static List<String> _convertToList(dynamic data) {
     if (data == null) return [];
-
-    // If already a list
-    if (data is List) {
-      return data.map((e) => e.toString()).toList();
-    }
-
-    // If it's a string → split into lines
+    if (data is List) return data.map((e) => e.toString()).toList();
     if (data is String) {
       return data
           .split("\n")
@@ -50,7 +38,13 @@ class Rule {
           .where((e) => e.isNotEmpty)
           .toList();
     }
-
     return [];
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value);
+    return null;
   }
 }

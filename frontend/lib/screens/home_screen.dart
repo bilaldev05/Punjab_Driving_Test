@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'practice_test_screen.dart';
+
 import 'traffic_signs_screen.dart';
 import 'rule_book.dart';
 
@@ -88,13 +88,7 @@ class HomeScreen extends StatelessWidget {
                 title: "Rules Test $testNumber",
                 icon: Icons.rule,
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          PracticeTestScreen(testNumber: testNumber),
-                    ),
-                  );
+                  
                 },
                 accentColor: accentColor,
                 badgeText: "$testNumber",

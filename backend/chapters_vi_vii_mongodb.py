@@ -4,12 +4,12 @@ from pymongo import MongoClient
 
 # MongoDB connection
 client = MongoClient("mongodb://localhost:27017/")  # Adjust if using Atlas
-db = client["punjab_driving_test"]
+db = client["driving_test"]
 collection = db["rule_book"]
 
 # Chapter VI: Construction, Equipment and Maintenance of Motor Vehicles
 chapter_vi = {
-    "chapter": "VI",
+    "chapter": 6,
     "title": "Construction, Equipment and Maintenance of Motor Vehicles",
     "sections": [
         {
@@ -51,7 +51,7 @@ chapter_vi = {
 
 # Chapter VII: Control of Traffic
 chapter_vii = {
-    "chapter": "VII",
+    "chapter": 7,
     "title": "Control of Traffic",
     "sections": [
         {

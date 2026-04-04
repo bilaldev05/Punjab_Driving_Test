@@ -7,10 +7,9 @@ from routes import (
     questions,
     results,
     exam,
-    analytics,
+   
     signs,
-    admin, 
-     # ✅ add rules
+    
 )
 
 
@@ -34,9 +33,9 @@ app.include_router(users.router)
 app.include_router(questions.router)
 app.include_router(results.router)
 app.include_router(exam.router)
-app.include_router(analytics.router)
+
 app.include_router(signs.router)
-app.include_router(admin.router)
+
 app.include_router(rulebook.router)
 
 
@@ -49,4 +48,4 @@ def home():
     return {"message": "Punjab Driving Test API running"}
 
 
-    # python -m uvicorn main:app --reload python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
+    # python -m uvicorn main:app --reload 

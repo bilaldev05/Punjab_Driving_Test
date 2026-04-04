@@ -4,12 +4,12 @@ from pymongo import MongoClient
 
 # MongoDB connection
 client = MongoClient("mongodb://localhost:27017/")  # Adjust if using Atlas
-db = client["punjab_driving_test"]
+db = client["driving_test"]
 collection = db["rule_book"]
 
 # Chapter IV data structured as nested dictionaries and lists
 chapter_iv = {
-    "chapter": "IV",
+    "chapter": 4,
     "title": "Control of Transport Vehicles",
     "sections": [
         {
