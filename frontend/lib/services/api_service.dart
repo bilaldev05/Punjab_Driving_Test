@@ -6,8 +6,7 @@ import '../models/questions.dart';
 import '../models/traffic_sign.dart';
 
 class ApiService {
-  static const baseUrl = "http://127.0.0.1:8000"; // Use your LAN IP for Web
-
+  static const baseUrl = "http://127.0.0.1:8000"; 
   // Fetch rules test questions
   static Future<List<Question>> getRulesTest(int testNumber) async {
     final response = await http.get(
