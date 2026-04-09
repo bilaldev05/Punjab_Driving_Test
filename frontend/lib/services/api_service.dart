@@ -51,7 +51,7 @@ class ApiService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        // ✅ Expecting: { "data": [...] }
+       
         final List list = data['data'];
 
         return list.map((e) => Rule.fromJson(e)).toList();
