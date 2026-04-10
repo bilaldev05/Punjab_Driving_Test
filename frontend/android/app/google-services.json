@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "869948741017",
+    "project_id": "punjab-traffic-system",
+    "storage_bucket": "punjab-traffic-system.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:869948741017:android:e752f7e8adbfb9a1932f08",
+        "android_client_info": {
+          "package_name": "com.example.frontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCAnwut5rMCF64P9y2kSJSQK6Da__1XLlM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,139 +1,166 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-import 'traffic_signs_screen.dart';
+import 'package:frontend/services/api_service.dart';
+import '../app_theme.dart';
+import 'profile_screen.dart';
 import 'rule_book.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  final Color accentColor = Colors.blueAccent;
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  
+  double progress = 0;
+int xp = 0;
+int streak = 0;
+String continueChapter = "";
+bool loading = true;
+
+
+
+@override
+void initState() {
+  super.initState();
+  loadDashboard();
+   // 🔥 MUST ADD THIS
+}
+
+
+ 
+ Future<void> loadDashboard() async {
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final data = await ApiService.getDashboard(user.uid);
+
+    setState(() {
+      xp = data["xp"];
+      streak = data["streak"];
+      progress = data["progress"];
+      continueChapter = data["continueChapter"];
+      loading = false;
+    });
+  } catch (e) {
+    print("Error: $e");
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 2,
-        centerTitle: true,
-        title: Text(
-          'Punjab Driving Test',
-          style: TextStyle(
-            color: Colors.blueAccent.shade700,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        iconTheme: IconThemeData(color: Colors.blueAccent.shade700),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.blueAccent.shade100,
-              child: const Icon(Icons.person, size: 18, color: Colors.white),
-            ),
-          ),
-        ],
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(12),
-          ),
-        ),
-      ),
-
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: AppTheme.background,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
           children: [
 
-            /// 🔥 FEATURE CARD (RULE BOOK)
+            /// 🧠 HEADER
+            _Header(onProfileTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              );
+            }),
+
+            const SizedBox(height: 16),
+
+            /// 📊 PROGRESS
+            _ProgressCard(progress: progress),
+
+            const SizedBox(height: 16),
+
+            /// 🔥 STATS
+            Row(
+              children: [
+                Expanded(
+                  child: _StatCard(
+                    title: "XP",
+                    value: "$xp",
+                    icon: Icons.star,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _StatCard(
+                    title: "Streak",
+                    value: "$streak 🔥",
+                    icon: Icons.local_fire_department,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            /// 🎯 CONTINUE LEARNING (NOW FUNCTIONAL)
+            _ContinueCard(
+  chapter: continueChapter,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const RuleBookScreen()),
+    ).then((_) => loadDashboard()); // 🔥 refresh after return
+  },
+),
+            const SizedBox(height: 20),
+
+            /// 🚗 FEATURE
             _FeatureCard(
               title: "Rule Book",
-              subtitle: "Learn all Punjab traffic rules",
+              subtitle: "Learn traffic rules in a simple way",
               icon: Icons.menu_book_rounded,
-              color: Colors.deepPurple,
+              color: AppTheme.primary,
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const RuleBookScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const RuleBookScreen()),
                 );
               },
             ),
 
             const SizedBox(height: 20),
 
-            /// 📘 RULE TESTS
-            Row(
-              children: [
-                Icon(Icons.rule, color: accentColor, size: 22),
-                const SizedBox(width: 8),
-                const Text(
-                  "Rules Tests",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blueAccent,
-                  ),
-                ),
-              ],
+            /// 📘 PRACTICE SECTION
+            const _SectionTitle(
+              title: "Practice Mode",
+              icon: Icons.school,
             ),
-            const SizedBox(height: 8),
 
-            ...List.generate(10, (index) {
-              int testNumber = index + 1;
-              return _ProfessionalCard(
-                title: "Rules Test $testNumber",
-                icon: Icons.rule,
-                onTap: () {
-                  
-                },
-                accentColor: accentColor,
-                badgeText: "$testNumber",
-              );
-            }),
+            const SizedBox(height: 12),
 
-            const SizedBox(height: 24),
-
-            /// 🚦 SIGN TESTS
-            Row(
-              children: [
-                const Icon(Icons.traffic, color: Colors.orange, size: 22),
-                const SizedBox(width: 8),
-                const Text(
-                  "Signs Tests",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange,
-                  ),
-                ),
-              ],
+            _ActionCard(
+              title: "Rules Practice",
+              subtitle: "Test your traffic rule knowledge",
+              icon: Icons.rule_folder,
+              color: AppTheme.primary,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const RuleBookScreen()),
+                );
+              },
             ),
-            const SizedBox(height: 8),
 
-            ...List.generate(10, (index) {
-              int testNumber = index + 1;
-              return _ProfessionalCard(
-                title: "Signs Test $testNumber",
-                icon: Icons.traffic,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          TrafficSignsScreen(testNumber: testNumber),
-                    ),
-                  );
-                },
-                accentColor: Colors.orange,
-                badgeText: "$testNumber",
-              );
-            }),
+            const SizedBox(height: 12),
 
-            const SizedBox(height: 24),
+            _ActionCard(
+              title: "Signs Practice",
+              subtitle: "Learn road signs visually",
+              icon: Icons.traffic,
+              color: AppTheme.secondary,
+              onTap: () {
+                // TODO: Add Signs Screen
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Coming soon 🚧")),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -142,12 +169,227 @@ class HomeScreen extends StatelessWidget {
 }
 
 //////////////////////////////////////////////////////////////////
-/// 🔥 FEATURE CARD (TOP BIG CARD)
+/// 🧠 HEADER
+//////////////////////////////////////////////////////////////////
+
+class _Header extends StatelessWidget {
+  final VoidCallback onProfileTap;
+
+  const _Header({required this.onProfileTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Punjab Driving Test",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              "Learn • Practice • Pass",
+              style: TextStyle(
+                fontSize: 13,
+                color: AppTheme.textSecondary,
+              ),
+            ),
+          ],
+        ),
+
+        InkWell(
+          onTap: onProfileTap,
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: const [
+                BoxShadow(color: Color(0x0D000000), blurRadius: 10),
+              ],
+            ),
+            child: const Icon(Icons.person, color: AppTheme.primary),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+//////////////////////////////////////////////////////////////////
+/// 📊 PROGRESS CARD
+//////////////////////////////////////////////////////////////////
+
+class _ProgressCard extends StatelessWidget {
+  final double progress;
+
+  const _ProgressCard({required this.progress});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: const [
+          BoxShadow(color: Color(0x0D000000), blurRadius: 12),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Your Driving Readiness",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 10,
+              color: AppTheme.primary,
+              backgroundColor: AppTheme.muted,
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          Text(
+            "${(progress * 100).toInt()}% ready for driving test",
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppTheme.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+//////////////////////////////////////////////////////////////////
+/// 🎯 CONTINUE CARD
+//////////////////////////////////////////////////////////////////
+
+class _ContinueCard extends StatelessWidget {
+  final String chapter;
+  final VoidCallback onTap;
+
+  const _ContinueCard({
+    required this.chapter,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.primary.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.play_circle_fill,
+                color: AppTheme.primary, size: 30),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Continue Learning",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    chapter,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+//////////////////////////////////////////////////////////////////
+/// 📊 STATS CARD
+//////////////////////////////////////////////////////////////////
+
+class _StatCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+
+  const _StatCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(color: Color(0x0D000000), blurRadius: 10),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: AppTheme.primary),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppTheme.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+//////////////////////////////////////////////////////////////////
+/// 🚗 FEATURE CARD
 //////////////////////////////////////////////////////////////////
 
 class _FeatureCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
+  final String title, subtitle;
   final IconData icon;
   final Color color;
   final VoidCallback onTap;
@@ -165,56 +407,40 @@ class _FeatureCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 90,
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [color.withOpacity(0.8), color],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: AppTheme.surface,
           borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            )
+          boxShadow: const [
+            BoxShadow(color: Color(0x0D000000), blurRadius: 12),
           ],
         ),
         child: Row(
           children: [
-            const SizedBox(width: 16),
-            CircleAvatar(
-              radius: 26,
-              backgroundColor: Colors.white,
-              child: Icon(icon, color: color, size: 28),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: color),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 13,
-                    ),
-                  ),
+                  Text(title,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text(subtitle,
+                      style: const TextStyle(
+                          fontSize: 13, color: AppTheme.textSecondary)),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, color: Colors.white),
-            const SizedBox(width: 16),
+            const Icon(Icons.arrow_forward_ios, size: 16),
           ],
         ),
       ),
@@ -223,85 +449,85 @@ class _FeatureCard extends StatelessWidget {
 }
 
 //////////////////////////////////////////////////////////////////
-/// 💎 PROFESSIONAL LIST CARD
+/// 🧭 SECTION TITLE
 //////////////////////////////////////////////////////////////////
 
-class _ProfessionalCard extends StatefulWidget {
+class _SectionTitle extends StatelessWidget {
   final String title;
   final IconData icon;
-  final VoidCallback onTap;
-  final Color accentColor;
-  final String badgeText;
 
-  const _ProfessionalCard({
+  const _SectionTitle({
     required this.title,
     required this.icon,
-    required this.onTap,
-    required this.accentColor,
-    required this.badgeText,
   });
 
   @override
-  State<_ProfessionalCard> createState() => _ProfessionalCardState();
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: AppTheme.primary),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
 }
 
-class _ProfessionalCardState extends State<_ProfessionalCard> {
-  bool _isPressed = false;
+//////////////////////////////////////////////////////////////////
+/// 🎯 ACTION CARD
+//////////////////////////////////////////////////////////////////
+
+class _ActionCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _ActionCard({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) {
-        setState(() => _isPressed = false);
-        widget.onTap();
-      },
-      onTapCancel: () => setState(() => _isPressed = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        height: 60,
-        margin: const EdgeInsets.symmetric(vertical: 5),
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(_isPressed ? 0.05 : 0.1),
-              blurRadius: _isPressed ? 3 : 6,
-              offset: Offset(0, _isPressed ? 1.5 : 3),
-            ),
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(color: Color(0x0D000000), blurRadius: 10),
           ],
         ),
         child: Row(
           children: [
-            const SizedBox(width: 14),
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: widget.accentColor,
-              child: widget.icon == Icons.traffic
-                  ? const Icon(Icons.traffic, color: Colors.white, size: 20)
-                  : Text(
-                      widget.badgeText,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-            ),
-            const SizedBox(width: 14),
+            Icon(icon, color: color),
+            const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                widget.title,
-                style: const TextStyle(
-                  color: Colors.black87,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(subtitle,
+                      style: const TextStyle(
+                          fontSize: 12, color: AppTheme.textSecondary)),
+                ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios,
-                color: widget.accentColor, size: 16),
-            const SizedBox(width: 14),
+            const Icon(Icons.arrow_forward_ios, size: 14),
           ],
         ),
       ),

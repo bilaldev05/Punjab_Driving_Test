@@ -1,27 +1,39 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/models/rule.dart';
-import 'package:frontend/screens/test_screen.dart';
+import 'package:frontend/services/api_service.dart';
+import '../app_theme.dart';
+import '../models/rule.dart';
+import '../screens/test_screen.dart';
 
 class ChapterDetailScreen extends StatelessWidget {
   final Rule rule;
 
   const ChapterDetailScreen({super.key, required this.rule});
 
-  /// Recursive builder for subsections (supports String, List, Map)
-  Widget buildSubsections(dynamic subsection, {double indent = 16}) {
+  Widget buildSubsections(dynamic subsection) {
     if (subsection == null) return const SizedBox.shrink();
 
     if (subsection is String) {
       return Padding(
-        padding: EdgeInsets.only(left: indent, top: 4, bottom: 4),
+        padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("• ", style: TextStyle(fontSize: 16)),
+            const Text(
+              "• ",
+              style: TextStyle(
+                color: AppTheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             Expanded(
               child: Text(
                 subsection,
-                style: const TextStyle(fontSize: 14.5, height: 1.5),
+                style: const TextStyle(
+                  fontSize: 14.5,
+                  height: 1.6,
+                  color: AppTheme.textSecondary,
+                ),
               ),
             ),
           ],
@@ -30,15 +42,12 @@ class ChapterDetailScreen extends StatelessWidget {
     } else if (subsection is List) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children:
-            subsection.map((s) => buildSubsections(s, indent: indent + 10)).toList(),
+        children: subsection.map((e) => buildSubsections(e)).toList(),
       );
     } else if (subsection is Map) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: subsection.entries
-            .map((e) => buildSubsections(e.value, indent: indent + 10))
-            .toList(),
+        children: subsection.values.map((e) => buildSubsections(e)).toList(),
       );
     }
 
@@ -50,90 +59,166 @@ class ChapterDetailScreen extends StatelessWidget {
     final sections = rule.sections ?? [];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppTheme.background,
+
+      /// 🌟 PREMIUM APP BAR
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.transparent,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF4A90E2), Color(0xFF357ABD)],
-            ),
+        backgroundColor: AppTheme.surface,
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        title: Text(
+          rule.title,
+          style: const TextStyle(
+            color: AppTheme.textPrimary,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
           ),
         ),
-        title: Text(rule.title),
       ),
+
       body: Column(
         children: [
+          /// 📘 HEADER CARD
+          Container(
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x0D000000),
+                  blurRadius: 12,
+                  offset: Offset(0, 6),
+                )
+              ],
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.menu_book_rounded,
+                    color: AppTheme.primary),
+
+                const SizedBox(width: 10),
+
+                Expanded(
+                  child: Text(
+                    "Read carefully and understand each rule before attempting the test.",
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppTheme.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          /// 📄 CONTENT LIST
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: sections.length,
-              itemBuilder: (context, index) {
+              itemBuilder: (_, index) {
                 final section = sections[index];
-                final sectionTitle = section['title'] ?? '';
-                final sectionNumber = section['section']?.toString() ?? '';
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(top: 14, bottom: 6),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Colors.blueAccent.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Text(
-                        "$sectionNumber: $sectionTitle",
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0D000000),
+                        blurRadius: 10,
+                        offset: Offset(0, 5),
+                      )
+                    ],
+                  ),
+
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      /// SECTION TITLE
+                      Text(
+                        "${section['section']} • ${section['title']}",
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 15.5,
+                          fontSize: 15,
+                          color: AppTheme.primary,
                         ),
                       ),
-                    ),
-                    if (section['subsections'] != null)
-                      buildSubsections(section['subsections'], indent: 20),
-                    const SizedBox(height: 10),
-                  ],
+
+                      const SizedBox(height: 10),
+
+                      /// SUBSECTIONS
+                      buildSubsections(section['subsections']),
+                    ],
+                  ),
                 );
               },
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 48),
-                backgroundColor: Colors.blueAccent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: rule.chapterNumber != null
-                  ? () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => TestScreen(
-                            chapterNumber: rule.chapterNumber!,
-                          ),
-                        ),
-                      );
-                    }
-                  : () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Chapter number missing!"),
-                        ),
-                      );
-                    },
-              child: const Text(
-                "Start Chapter Test",
-                style: TextStyle(fontSize: 16, color: Colors.white),
-              ),
+
+          /// 🔥 PREMIUM CTA BUTTON
+         Padding(
+  padding: const EdgeInsets.all(16),
+  child: SizedBox(
+    width: double.infinity,
+    height: 52,
+    child: ElevatedButton.icon(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppTheme.secondary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+      ),
+
+      icon: const Icon(Icons.play_arrow, color: Colors.white),
+
+      onPressed: () async {
+        final user = FirebaseAuth.instance.currentUser;
+
+        if (user == null) return;
+
+        if (rule.chapterNumber == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Chapter number missing!"),
+            ),
+          );
+          return;
+        }
+
+        // 📘 Update chapter progress (user started chapter)
+        await ApiService.updateChapter(
+          user.uid,
+          "Chapter ${rule.chapterNumber} • ${rule.title}",
+          0.1,
+        );
+
+        // 🚀 Navigate to test
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => TestScreen(
+              chapterNumber: rule.chapterNumber!,
             ),
           ),
+        );
+      },
+
+      label: const Text(
+        "Start Chapter Test",
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+  ),
+)
         ],
       ),
     );

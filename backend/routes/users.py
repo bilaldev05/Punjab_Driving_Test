@@ -4,33 +4,59 @@ from database import users_collection
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
+from fastapi import APIRouter
+from database import users_collection
 
-@router.post("/register")
-def register(user: User):
-
-    existing_user = users_collection.find_one({"email": user.email})
-
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Email already exists")
-
-    users_collection.insert_one(user.dict())
-
-    return {"message": "User created successfully"}
+router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.post("/login")
-def login(user: User):
+# 🔥 CREATE USER (UID BASED)
+@router.post("/")
+def create_user(user: dict):
+    existing = users_collection.find_one({"uid": user["uid"]})
 
-    db_user = users_collection.find_one({"email": user.email})
+    if existing:
+        return {"message": "User already exists", "user": existing}
 
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
+    users_collection.insert_one(user)
+    return {"message": "User created"}
 
-    if db_user["password"] != user.password:
-        raise HTTPException(status_code=401, detail="Incorrect password")
 
-    return {
-        "message": "Login successful",
-        "user_id": str(db_user["_id"]),
-        "email": db_user["email"]
-    }
+# 🔥 GET USER BY UID
+@router.get("/{uid}")
+def get_user(uid: str):
+    user = users_collection.find_one({"uid": uid}, {"_id": 0})
+    return user
+
+
+# 🔥 UPDATE SCORE (UID BASED)
+@router.post("/update-score")
+def update_score(data: dict):
+    uid = data["uid"]
+    chapter = data["chapter"]
+    score = data["score"]
+    total = data["total"]
+
+    user = users_collection.find_one({"uid": uid})
+
+    if not user:
+        return {"error": "User not found"}
+
+    users_collection.update_one(
+        {"uid": uid},
+        {
+            "$inc": {
+                "totalScore": score,
+                "testsTaken": 1
+            },
+            "$push": {
+                "chapterProgress": {
+                    "chapter": chapter,
+                    "score": score,
+                    "total": total
+                }
+            }
+        }
+    )
+
+    return {"message": "Score updated"}

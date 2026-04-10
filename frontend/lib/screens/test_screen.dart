@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/models/questions.dart';
-import 'package:frontend/services/api_service.dart';
+import '../app_theme.dart';
+import '../models/questions.dart';
+import '../services/api_service.dart';
 
 class TestScreen extends StatefulWidget {
   final int chapterNumber;
@@ -25,15 +27,16 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   void loadQuestions() async {
-  final data = await ApiService.getQuestions(widget.chapterNumber);
+    final data = await ApiService.getQuestions(widget.chapterNumber);
 
-  setState(() {
-    questions = data.map<Question>((q) => Question.fromJson(q, shuffle: true)).toList();
-  });
-}
+    setState(() {
+      questions =
+          data.map<Question>((q) => Question.fromJson(q, shuffle: true)).toList();
+    });
+  }
 
   void checkAnswer(int index) {
-    if (showAnswer) return; // prevent multiple taps
+    if (showAnswer) return;
 
     setState(() {
       selectedIndex = index;
@@ -57,128 +60,117 @@ class _TestScreenState extends State<TestScreen> {
     }
   }
 
-  void showResult() {
+  Future<void> showResult() async {
   final percentage = (score / questions.length) * 100;
+
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  final uid = user.uid;
+
+  // 🔥 1. ADD XP (score based)
+  await ApiService.addXp(uid, score * 10);
+
+  // 📘 2. UPDATE CHAPTER PROGRESS
+  await ApiService.updateChapter(
+    uid,
+    "Chapter ${widget.chapterNumber}",
+    score / questions.length,
+  );
+
+  // 🔥 3. UPDATE STREAK
+  await ApiService.updateStreak(uid);
+
+  // 📊 4. SAVE TEST RESULT
+  await ApiService.updateScore(
+    uid: uid,
+    chapter: widget.chapterNumber,
+    score: score,
+    total: questions.length,
+  );
 
   showDialog(
     context: context,
-    barrierDismissible: false, // prevent closing by tapping outside
-    builder: (_) => Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF4A90E2), Color(0xFF357ABD)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              "Test Completed",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Score circle
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  "$score / ${questions.length}",
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Percentage bar
-            LinearProgressIndicator(
-              value: score / questions.length,
-              minHeight: 10,
-              backgroundColor: Colors.white.withOpacity(0.3),
-              valueColor: AlwaysStoppedAnimation<Color>(
-                percentage >= 80
-                    ? Colors.greenAccent
-                    : (percentage >= 50 ? Colors.orangeAccent : Colors.redAccent),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            Text(
-              "Your Score: ${percentage.toStringAsFixed(1)}%",
-              style: const TextStyle(
-                fontSize: 18,
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // OK button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // close dialog
-                  Navigator.pop(context); // back to previous screen
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.blueAccent,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  "OK",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-            )
-          ],
-        ),
+    builder: (_) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
       ),
+      title: const Text("🎉 Test Completed"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            "Score: $score / ${questions.length}",
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+
+          LinearProgressIndicator(
+            value: score / questions.length,
+            color: AppTheme.primary,
+            backgroundColor: AppTheme.muted,
+          ),
+
+          const SizedBox(height: 12),
+
+          Text(
+            "${percentage.toStringAsFixed(1)}%",
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.primary,
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.primary,
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+            Navigator.pop(context);
+          },
+          child: const Text("Continue"),
+        )
+      ],
     ),
   );
 }
 
-  Color getOptionColor(int index) {
-    if (!showAnswer) return Colors.white;
+  Color _optionColor(int index) {
+    if (!showAnswer) return AppTheme.surface;
 
-    if (index == questions[currentIndex].answer) {
-      return Colors.green.withOpacity(0.3); // correct answer
+    final correct = questions[currentIndex].answer;
+
+    if (index == correct) {
+      return Colors.green.withOpacity(0.12);
     }
 
-    if (selectedIndex == index && selectedIndex != questions[currentIndex].answer) {
-      return Colors.red.withOpacity(0.3); // wrong answer
+    if (index == selectedIndex) {
+      return Colors.red.withOpacity(0.12);
     }
 
-    return Colors.white;
+    return AppTheme.surface;
+  }
+
+  Color _borderColor(int index) {
+    if (!showAnswer) return AppTheme.muted;
+
+    final correct = questions[currentIndex].answer;
+
+    if (index == correct) return Colors.green;
+    if (index == selectedIndex) return Colors.red;
+
+    return AppTheme.muted;
   }
 
   @override
   Widget build(BuildContext context) {
     if (questions.isEmpty) {
       return const Scaffold(
+        backgroundColor: AppTheme.background,
         body: Center(child: CircularProgressIndicator()),
       );
     }
@@ -186,78 +178,140 @@ class _TestScreenState extends State<TestScreen> {
     final q = questions[currentIndex];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: AppTheme.background,
+
+      /// 🌟 APP BAR
       appBar: AppBar(
-        title: Text("Chapter ${widget.chapterNumber} Test"),
-        backgroundColor: Colors.blueAccent,
+        elevation: 0,
+        backgroundColor: AppTheme.surface,
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        title: Text(
+          "Chapter ${widget.chapterNumber} Test",
+          style: const TextStyle(
+            color: AppTheme.textPrimary,
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+          ),
+        ),
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Progress indicator
-            LinearProgressIndicator(
-              value: (currentIndex + 1) / questions.length,
-              backgroundColor: Colors.grey[300],
-              color: Colors.blueAccent,
-              minHeight: 6,
+            /// 📊 PROGRESS BAR
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: LinearProgressIndicator(
+                value: (currentIndex + 1) / questions.length,
+                color: AppTheme.primary,
+                backgroundColor: AppTheme.muted,
+                minHeight: 8,
+              ),
             ),
-            const SizedBox(height: 20),
 
-            // Question
-            Text(
-              "Q${currentIndex + 1}. ${q.question}",
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+            const SizedBox(height: 16),
+
+            /// 🧠 QUESTION CARD
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x0D000000),
+                    blurRadius: 10,
+                    offset: Offset(0, 5),
+                  )
+                ],
+              ),
+              child: Text(
+                "Q${currentIndex + 1}. ${q.question}",
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  height: 1.4,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
             ),
-            const SizedBox(height: 24),
 
-            // Options
-            ...List.generate(q.options.length, (index) {
-              return Container(
-                margin: const EdgeInsets.symmetric(vertical: 6),
-                decoration: BoxDecoration(
-                  color: getOptionColor(index),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: ListTile(
-                  title: Text(
-                    q.options[index],
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  onTap: () => checkAnswer(index),
-                  leading: showAnswer
-                      ? Icon(
-                          index == q.answer
-                              ? Icons.check_circle
-                              : (index == selectedIndex ? Icons.cancel : Icons.circle_outlined),
-                          color: index == q.answer
-                              ? Colors.green
-                              : (index == selectedIndex ? Colors.red : Colors.grey),
-                        )
-                      : null,
-                ),
-              );
-            }),
+            const SizedBox(height: 16),
 
-            const Spacer(),
+            /// 📋 OPTIONS
+            Expanded(
+              child: ListView.builder(
+                itemCount: q.options.length,
+                itemBuilder: (context, index) {
+                  final option = q.options[index];
 
-            // Next button
+                  return GestureDetector(
+                    onTap: () => checkAnswer(index),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: _optionColor(index),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: _borderColor(index),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              option,
+                              style: const TextStyle(
+                                fontSize: 14.5,
+                                color: AppTheme.textPrimary,
+                              ),
+                            ),
+                          ),
+
+                          if (showAnswer)
+                            Icon(
+                              index == q.answer
+                                  ? Icons.check_circle
+                                  : (index == selectedIndex
+                                      ? Icons.cancel
+                                      : null),
+                              color: index == q.answer
+                                  ? Colors.green
+                                  : Colors.red,
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            /// 🔥 CTA BUTTON
             SizedBox(
               width: double.infinity,
+              height: 52,
               child: ElevatedButton(
-                onPressed: showAnswer ? nextQuestion : null,
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.blueAccent,
+                  backgroundColor: AppTheme.secondary,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                 ),
+                onPressed: showAnswer ? nextQuestion : null,
                 child: Text(
-                  currentIndex == questions.length - 1 ? "Finish Test" : "Next Question",
-                  style: const TextStyle(fontSize: 16, color: Colors.white),
+                  currentIndex == questions.length - 1
+                      ? "Finish Test"
+                      : "Next Question",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),

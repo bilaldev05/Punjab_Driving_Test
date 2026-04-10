@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:frontend/models/rule.dart';
+
 import 'package:http/http.dart' as http;
 import '../models/questions.dart';
 import '../models/traffic_sign.dart';
@@ -72,6 +73,86 @@ static Future<List<dynamic>> getQuestions(int chapter) async {
     } else {
       throw Exception("Failed to load questions");
     }
+  }
+/// 🔥 CREATE USER
+  static Future<void> createUser(Map<String, dynamic> user) async {
+    await http.post(
+      Uri.parse("$baseUrl/users"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(user),
+    );
+  }
+
+  /// 🔥 GET USER BY UID
+  static Future<dynamic> getUserByUid(String uid) async {
+    final res = await http.get(Uri.parse("$baseUrl/users/$uid"));
+    return jsonDecode(res.body);
+  }
+
+  /// 🔥 UPDATE SCORE USING UID
+  static Future<void> updateScore({
+    required String uid,
+    required int chapter,
+    required int score,
+    required int total,
+  }) async {
+    await http.post(
+      Uri.parse("$baseUrl/users/update-score"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "uid": uid,
+        "chapter": chapter,
+        "score": score,
+        "total": total,
+      }),
+    );
+  }
+  static Future<Map<String, dynamic>> getDashboard(String uid) async {
+    final res = await http.get(
+      Uri.parse("$baseUrl/dashboard/$uid"),
+    );
+
+    if (res.statusCode != 200) {
+      throw Exception("Failed to load dashboard");
+    }
+
+    return jsonDecode(res.body);
+  }
+
+  // 🔥 ADD XP
+  static Future<void> addXp(String userId, int xp) async {
+    await http.post(
+      Uri.parse("$baseUrl/add-xp"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "user_id": userId,
+        "xp": xp,
+      }),
+    );
+  }
+
+  // 📘 UPDATE CHAPTER
+  static Future<void> updateChapter(
+    String userId,
+    String chapter,
+    double progress,
+  ) async {
+    await http.post(
+      Uri.parse("$baseUrl/update-chapter"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "user_id": userId,
+        "chapter": chapter,
+        "progress": progress,
+      }),
+    );
+  }
+
+  // 🔥 UPDATE STREAK
+  static Future<void> updateStreak(String userId) async {
+    await http.post(
+      Uri.parse("$baseUrl/update-streak/$userId"),
+    );
   }
 
 }
