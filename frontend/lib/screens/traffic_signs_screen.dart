@@ -53,7 +53,7 @@ class _TrafficSignsScreenState extends State<TrafficSignsScreen> {
         showExplanation = false;
       });
     } else {
-      // Test finished
+      
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
