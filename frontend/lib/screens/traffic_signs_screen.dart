@@ -110,7 +110,7 @@ class _TrafficSignsScreenState extends State<TrafficSignsScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Progress
+            
             Row(
               children: [
                 Expanded(
