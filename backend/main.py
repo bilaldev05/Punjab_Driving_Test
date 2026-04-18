@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from database import users_collection
 from datetime import date
-
+from routes import survival
 
 
 from routes import (
@@ -12,7 +12,7 @@ from routes import (
     questions,
     results,
     exam,
-   
+   survival,
     signs,
     
 )
@@ -40,7 +40,7 @@ app.include_router(results.router)
 app.include_router(exam.router)
 
 app.include_router(signs.router)
-
+app.include_router(survival.router)
 app.include_router(rulebook.router)
 
 
@@ -100,17 +100,33 @@ class XPUpdate(BaseModel):
 
 @app.post("/add-xp")
 def add_xp(data: XPUpdate):
+    user = users_collection.find_one({"user_id": data.user_id})
+
+    # 🔥 if user doesn't exist → create it safely
+    if not user:
+        users_collection.insert_one({
+            "user_id": data.user_id,
+            "xp": data.xp,
+            "streak": 0
+        })
+
+        return {
+            "message": "User created and XP added",
+            "xp": data.xp
+        }
+
+    # 🔥 update XP safely
     users_collection.update_one(
         {"user_id": data.user_id},
         {"$inc": {"xp": data.xp}}
     )
 
-    # 🔥 return updated XP
-    user = users_collection.find_one({"user_id": data.user_id})
+    # 🔥 fetch updated user
+    updated_user = users_collection.find_one({"user_id": data.user_id})
 
     return {
-        "message": "XP added",
-        "xp": user.get("xp", 0)
+        "message": "XP added successfully",
+        "xp": updated_user.get("xp", 0)
     }
 
 class ChapterUpdate(BaseModel):

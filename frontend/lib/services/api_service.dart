@@ -120,16 +120,33 @@ static Future<List<dynamic>> getQuestions(int chapter) async {
   }
 
   // 🔥 ADD XP
-  static Future<void> addXp(String userId, int xp) async {
-    await http.post(
+ static Future<int?> addXp(String userId, int xp) async {
+  try {
+    final response = await http.post(
       Uri.parse("$baseUrl/add-xp"),
-      headers: {"Content-Type": "application/json"},
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: jsonEncode({
         "user_id": userId,
         "xp": xp,
       }),
     );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      // 🔥 backend returns updated XP
+      return data["xp"];
+    } else {
+      print("XP update failed: ${response.body}");
+      return null;
+    }
+  } catch (e) {
+    print("XP API error: $e");
+    return null;
   }
+}
 
   // 📘 UPDATE CHAPTER
   static Future<void> updateChapter(
@@ -154,5 +171,30 @@ static Future<List<dynamic>> getQuestions(int chapter) async {
       Uri.parse("$baseUrl/update-streak/$userId"),
     );
   }
+static Future<List<dynamic>> getSurvivalQuestions() async {
+  final res = await http.get(Uri.parse("$baseUrl/survival/questions"));
 
+  if (res.statusCode == 200) {
+    return jsonDecode(res.body);
+  } else {
+    throw Exception("Failed to load survival questions");
+  }
 }
+
+static Future<void> saveSurvivalScore({
+  required String name,
+  required int score,
+}) async {
+  final res = await http.post(
+    Uri.parse("$baseUrl/survival"),
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({
+      "name": name,
+      "score": score,
+    }),
+  );
+
+  if (res.statusCode != 200) {
+    throw Exception("Failed to save survival score");
+  }
+}}

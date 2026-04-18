@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/survival_screen.dart';
 import 'package:frontend/services/api_service.dart';
 import '../app_theme.dart';
 import 'profile_screen.dart';
@@ -146,7 +147,35 @@ void initState() {
                 );
               },
             ),
+ const SizedBox(height: 12),
 
+      /// 🔥 SURVIVAL MODE (FIXED STYLE)
+     _ActionCard(
+  title: "Survival Challenge",
+  subtitle: "3 lives • endless challenge",
+  icon: Icons.flash_on,
+  color: Colors.orange,
+  onTap: () async {
+    final earnedXp = await Navigator.push<int>(
+      context,
+      MaterialPageRoute(builder: (_) => const SurvivalScreen()),
+    );
+
+    if (earnedXp != null && earnedXp > 0) {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      // 🔥 ONLY backend handles XP truth
+      final updatedXp = await ApiService.addXp(user.uid, earnedXp);
+
+      if (updatedXp != null) {
+        setState(() {
+          xp = updatedXp; // single source of truth
+        });
+      }
+    }
+  },
+),
             const SizedBox(height: 12),
 
             _ActionCard(
