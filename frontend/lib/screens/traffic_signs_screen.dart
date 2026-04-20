@@ -127,7 +127,6 @@ class _TrafficSignsScreenState extends State<TrafficSignsScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Sign Card
             Expanded(
               child: Card(
                 elevation: 6,
