@@ -135,7 +135,7 @@ class _TrafficSignsScreenState extends State<TrafficSignsScreen> {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      // Sign Image
+                     
                       Expanded(
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(16),
