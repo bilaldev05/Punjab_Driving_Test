@@ -148,7 +148,7 @@ class _TrafficSignsScreenState extends State<TrafficSignsScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Sign Question
+                      
                       ValueListenableBuilder<bool>(
                         valueListenable: isUrdu,
                         builder: (_, value, __) => Text(
