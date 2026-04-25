@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/survival_screen.dart';
 import 'package:frontend/services/api_service.dart';
-import '../app_theme.dart';
+
 import 'profile_screen.dart';
 import 'rule_book.dart';
 
@@ -14,109 +14,185 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  
   double progress = 0;
-int xp = 0;
-int streak = 0;
-String continueChapter = "";
-bool loading = true;
+  int xp = 0;
+  int streak = 0;
+  String continueChapter = "";
+  bool loading = true;
 
+  @override
+  void initState() {
+    super.initState();
+    loadDashboard();
+  }
 
+  Future<void> loadDashboard() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
 
-@override
-void initState() {
-  super.initState();
-  loadDashboard();
-   // 🔥 MUST ADD THIS
-}
+      final data = await ApiService.getDashboard(user.uid);
 
+      setState(() {
+        xp = data["xp"] ?? 0;
+        streak = data["streak"] ?? 0;
+        progress = (data["progress"] ?? 0).toDouble();
+        continueChapter = data["continueChapter"] ?? "";
+        loading = false;
+      });
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
 
- 
- Future<void> loadDashboard() async {
-  try {
+  Future<void> addXp(int earnedXp) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    final data = await ApiService.getDashboard(user.uid);
+    final updatedXp = await ApiService.addXp(user.uid, earnedXp);
 
-    setState(() {
-      xp = data["xp"];
-      streak = data["streak"];
-      progress = data["progress"];
-      continueChapter = data["continueChapter"];
-      loading = false;
-    });
-  } catch (e) {
-    print("Error: $e");
+    if (updatedXp != null) {
+      setState(() {
+        xp = updatedXp;
+      });
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: const Color(0xFF0B0F1A),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-
             /// 🧠 HEADER
-            _Header(onProfileTap: () {
+            _GameHeader(onProfileTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const ProfileScreen()),
               );
             }),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
 
-            /// 📊 PROGRESS
-            _ProgressCard(progress: progress),
+            /// 🚗 DRIVING READINESS HUD (TOP)
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF141E30), Color(0xFF243B55)],
+                ),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "DRIVING READINESS",
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "${(progress * 100).toInt()}% READY",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      minHeight: 8,
+                      backgroundColor: Colors.white12,
+                      color: Colors.greenAccent,
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
+
+            /// 📘 RULE BOOK QUICK ACCESS
+            _QuickNavCard(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const RuleBookScreen()),
+                );
+              },
+            ),
+
+            
+
+            
+
+            const SizedBox(height: 18),
+
+            /// 💰 XP HUD CARD
+          
 
             /// 🔥 STATS
             Row(
               children: [
                 Expanded(
-                  child: _StatCard(
-                    title: "XP",
-                    value: "$xp",
-                    icon: Icons.star,
+                  child: _HudCard(
+                    title: "STREAK",
+                    value: "$streak 🔥",
+                    color: Colors.orange,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _StatCard(
-                    title: "Streak",
-                    value: "$streak 🔥",
-                    icon: Icons.local_fire_department,
+                  child: _HudCard(
+                    title: "XP LEVEL",
+                    value: "$xp",
+                    color: Colors.blueAccent,
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 16),
-
-            /// 🎯 CONTINUE LEARNING (NOW FUNCTIONAL)
-            _ContinueCard(
-  chapter: continueChapter,
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const RuleBookScreen()),
-    ).then((_) => loadDashboard()); // 🔥 refresh after return
-  },
-),
             const SizedBox(height: 20),
 
-            /// 🚗 FEATURE
-            _FeatureCard(
-              title: "Rule Book",
-              subtitle: "Learn traffic rules in a simple way",
+            /// 🎯 CONTINUE
+            _MissionCard(
+              chapter: continueChapter,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const RuleBookScreen()),
+                ).then((_) => loadDashboard());
+              },
+            ),
+
+            const SizedBox(height: 20),
+
+            const Text(
+              "GAME MODES",
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+                letterSpacing: 2,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            /// 📘 RULE MODE
+            _GameModeCard(
+              title: "RULE BATTLE",
+              subtitle: "Train your driving instincts",
               icon: Icons.menu_book_rounded,
-              color: AppTheme.primary,
+              color: Colors.greenAccent,
               onTap: () {
                 Navigator.push(
                   context,
@@ -125,66 +201,37 @@ void initState() {
               },
             ),
 
-            const SizedBox(height: 20),
-
-            /// 📘 PRACTICE SECTION
-            const _SectionTitle(
-              title: "Practice Mode",
-              icon: Icons.school,
-            ),
-
             const SizedBox(height: 12),
 
-            _ActionCard(
-              title: "Rules Practice",
-              subtitle: "Test your traffic rule knowledge",
-              icon: Icons.rule_folder,
-              color: AppTheme.primary,
-              onTap: () {
-                Navigator.push(
+            /// 🔥 SURVIVAL MODE (FIXED RETURN TYPE)
+            _GameModeCard(
+              title: "SURVIVAL MODE",
+              subtitle: "3 lives • endless challenge",
+              icon: Icons.flash_on,
+              color: Colors.orangeAccent,
+              glow: true,
+              onTap: () async {
+                final result = await Navigator.push<int>(
                   context,
-                  MaterialPageRoute(builder: (_) => const RuleBookScreen()),
+                  MaterialPageRoute(builder: (_) => const SurvivalScreen()),
                 );
+
+                if (result != null && result > 0) {
+                  await addXp(result);
+                  await loadDashboard();
+                }
               },
             ),
- const SizedBox(height: 12),
 
-      /// 🔥 SURVIVAL MODE (FIXED STYLE)
-     _ActionCard(
-  title: "Survival Challenge",
-  subtitle: "3 lives • endless challenge",
-  icon: Icons.flash_on,
-  color: Colors.orange,
-  onTap: () async {
-    final earnedXp = await Navigator.push<int>(
-      context,
-      MaterialPageRoute(builder: (_) => const SurvivalScreen()),
-    );
-
-    if (earnedXp != null && earnedXp > 0) {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-
-      // 🔥 ONLY backend handles XP truth
-      final updatedXp = await ApiService.addXp(user.uid, earnedXp);
-
-      if (updatedXp != null) {
-        setState(() {
-          xp = updatedXp; // single source of truth
-        });
-      }
-    }
-  },
-),
             const SizedBox(height: 12),
 
-            _ActionCard(
-              title: "Signs Practice",
+            /// 🚧 SIGNS
+            _GameModeCard(
+              title: "SIGN CHALLENGE",
               subtitle: "Learn road signs visually",
               icon: Icons.traffic,
-              color: AppTheme.secondary,
+              color: Colors.purpleAccent,
               onTap: () {
-                // TODO: Add Signs Screen
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Coming soon 🚧")),
                 );
@@ -196,15 +243,10 @@ void initState() {
     );
   }
 }
-
-//////////////////////////////////////////////////////////////////
-/// 🧠 HEADER
-//////////////////////////////////////////////////////////////////
-
-class _Header extends StatelessWidget {
+class _GameHeader extends StatelessWidget {
   final VoidCallback onProfileTap;
 
-  const _Header({required this.onProfileTap});
+  const _GameHeader({required this.onProfileTap});
 
   @override
   Widget build(BuildContext context) {
@@ -215,92 +257,71 @@ class _Header extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Punjab Driving Test",
+              "DRIVING QUEST",
               style: TextStyle(
+                color: Colors.white,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimary,
+                letterSpacing: 1,
               ),
             ),
-            SizedBox(height: 4),
             Text(
-              "Learn • Practice • Pass",
-              style: TextStyle(
-                fontSize: 13,
-                color: AppTheme.textSecondary,
-              ),
+              "Level up your driving skills",
+              style: TextStyle(color: Colors.white60, fontSize: 12),
             ),
           ],
         ),
-
-        InkWell(
+        GestureDetector(
           onTap: onProfileTap,
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppTheme.surface,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: const [
-                BoxShadow(color: Color(0x0D000000), blurRadius: 10),
-              ],
-            ),
-            child: const Icon(Icons.person, color: AppTheme.primary),
+          child: const CircleAvatar(
+            backgroundColor: Colors.white10,
+            child: Icon(Icons.person, color: Colors.white),
           ),
-        ),
+        )
       ],
     );
   }
 }
 
-//////////////////////////////////////////////////////////////////
-/// 📊 PROGRESS CARD
-//////////////////////////////////////////////////////////////////
-
-class _ProgressCard extends StatelessWidget {
+// ignore: unused_element
+class _XPCard extends StatelessWidget {
+  final int xp;
   final double progress;
 
-  const _ProgressCard({required this.progress});
+  const _XPCard({required this.xp, required this.progress});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppTheme.surface,
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1F1C2C), Color(0xFF928DAB)],
+        ),
         borderRadius: BorderRadius.circular(18),
-        boxShadow: const [
-          BoxShadow(color: Color(0x0D000000), blurRadius: 12),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Your Driving Readiness",
-            style: TextStyle(
+          const Text("TOTAL XP",
+              style: TextStyle(color: Colors.white70, fontSize: 12)),
+          const SizedBox(height: 6),
+          Text(
+            "$xp XP",
+            style: const TextStyle(
+              fontSize: 26,
+              color: Colors.white,
               fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
             ),
           ),
-          const SizedBox(height: 10),
-
+          const SizedBox(height: 12),
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: LinearProgressIndicator(
               value: progress,
-              minHeight: 10,
-              color: AppTheme.primary,
-              backgroundColor: AppTheme.muted,
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          Text(
-            "${(progress * 100).toInt()}% ready for driving test",
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppTheme.textSecondary,
+              minHeight: 8,
+              backgroundColor: Colors.white12,
+              color: Colors.orangeAccent,
             ),
           ),
         ],
@@ -309,72 +330,15 @@ class _ProgressCard extends StatelessWidget {
   }
 }
 
-//////////////////////////////////////////////////////////////////
-/// 🎯 CONTINUE CARD
-//////////////////////////////////////////////////////////////////
-
-class _ContinueCard extends StatelessWidget {
-  final String chapter;
-  final VoidCallback onTap;
-
-  const _ContinueCard({
-    required this.chapter,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppTheme.primary.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.play_circle_fill,
-                color: AppTheme.primary, size: 30),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Continue Learning",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    chapter,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-//////////////////////////////////////////////////////////////////
-/// 📊 STATS CARD
-//////////////////////////////////////////////////////////////////
-
-class _StatCard extends StatelessWidget {
+class _HudCard extends StatelessWidget {
   final String title;
   final String value;
-  final IconData icon;
+  final Color color;
 
-  const _StatCard({
+  const _HudCard({
     required this.title,
     required this.value,
-    required this.icon,
+    required this.color,
   });
 
   @override
@@ -382,29 +346,21 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(color: Color(0x0D000000), blurRadius: 10),
-        ],
+        color: Colors.white10,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white12),
       ),
       child: Column(
         children: [
-          Icon(icon, color: AppTheme.primary),
-          const SizedBox(height: 8),
+          Text(title,
+              style: const TextStyle(color: Colors.white60, fontSize: 12)),
+          const SizedBox(height: 6),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
+              color: color,
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppTheme.textSecondary,
             ),
           ),
         ],
@@ -413,22 +369,58 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-//////////////////////////////////////////////////////////////////
-/// 🚗 FEATURE CARD
-//////////////////////////////////////////////////////////////////
+class _MissionCard extends StatelessWidget {
+  final String chapter;
+  final VoidCallback onTap;
 
-class _FeatureCard extends StatelessWidget {
-  final String title, subtitle;
+  const _MissionCard({
+    required this.chapter,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white10,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        child: Row(
+          children: [
+            const Icon(Icons.play_arrow, color: Colors.white),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                chapter,
+                style: const TextStyle(color: Colors.white70),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GameModeCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
   final IconData icon;
   final Color color;
   final VoidCallback onTap;
+  final bool glow;
 
-  const _FeatureCard({
+  const _GameModeCard({
     required this.title,
     required this.subtitle,
     required this.icon,
     required this.color,
     required this.onTap,
+    this.glow = false,
   });
 
   @override
@@ -438,125 +430,77 @@ class _FeatureCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: const [
-            BoxShadow(color: Color(0x0D000000), blurRadius: 12),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(icon, color: color),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text(subtitle,
-                      style: const TextStyle(
-                          fontSize: 13, color: AppTheme.textSecondary)),
-                ],
-              ),
-            ),
-            const Icon(Icons.arrow_forward_ios, size: 16),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-//////////////////////////////////////////////////////////////////
-/// 🧭 SECTION TITLE
-//////////////////////////////////////////////////////////////////
-
-class _SectionTitle extends StatelessWidget {
-  final String title;
-  final IconData icon;
-
-  const _SectionTitle({
-    required this.title,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: AppTheme.primary),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+          gradient: LinearGradient(
+            colors: [
+              color.withOpacity(0.25),
+              Colors.black54,
+            ],
           ),
-        ),
-      ],
-    );
-  }
-}
-
-//////////////////////////////////////////////////////////////////
-/// 🎯 ACTION CARD
-//////////////////////////////////////////////////////////////////
-
-class _ActionCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _ActionCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: const [
-            BoxShadow(color: Color(0x0D000000), blurRadius: 10),
-          ],
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: glow
+              ? [
+                  BoxShadow(
+                    color: color.withOpacity(0.4),
+                    blurRadius: 20,
+                    spreadRadius: 2,
+                  )
+                ]
+              : [],
         ),
         child: Row(
           children: [
-            Icon(icon, color: color),
+            Icon(icon, color: color, size: 28),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold)),
                   Text(subtitle,
                       style: const TextStyle(
-                          fontSize: 12, color: AppTheme.textSecondary)),
+                          color: Colors.white60, fontSize: 12)),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, size: 14),
+            const Icon(Icons.arrow_forward_ios,
+                color: Colors.white30, size: 14),
+          ],
+        ),
+      ),
+    );
+  }
+}
+class _QuickNavCard extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _QuickNavCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          color: Colors.white10,
+          border: Border.all(color: Colors.white12),
+        ),
+        child: Row(
+          children: const [
+            Icon(Icons.menu_book_rounded, color: Colors.white),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                "Open Rule Book",
+                style: TextStyle(color: Colors.white70),
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios,
+                color: Colors.white30, size: 14),
           ],
         ),
       ),

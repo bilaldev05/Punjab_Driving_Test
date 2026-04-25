@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../app_theme.dart';
 import '../models/questions.dart';
 import '../services/api_service.dart';
 
@@ -30,8 +29,9 @@ class _TestScreenState extends State<TestScreen> {
     final data = await ApiService.getQuestions(widget.chapterNumber);
 
     setState(() {
-      questions =
-          data.map<Question>((q) => Question.fromJson(q, shuffle: true)).toList();
+      questions = data
+          .map<Question>((q) => Question.fromJson(q, shuffle: true))
+          .toList();
     });
   }
 
@@ -61,136 +61,158 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   Future<void> showResult() async {
-  final percentage = (score / questions.length) * 100;
+    final percentage = (score / questions.length) * 100;
 
-  final user = FirebaseAuth.instance.currentUser;
-  if (user == null) return;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
-  final uid = user.uid;
+    final uid = user.uid;
 
-  // 🔥 1. ADD XP (score based)
-  await ApiService.addXp(uid, score * 10);
+    await ApiService.addXp(uid, score * 10);
+    await ApiService.updateChapter(
+      uid,
+      "Chapter ${widget.chapterNumber}",
+      score / questions.length,
+    );
+    await ApiService.updateStreak(uid);
 
-  // 📘 2. UPDATE CHAPTER PROGRESS
-  await ApiService.updateChapter(
-    uid,
-    "Chapter ${widget.chapterNumber}",
-    score / questions.length,
-  );
+    await ApiService.updateScore(
+      uid: uid,
+      chapter: widget.chapterNumber,
+      score: score,
+      total: questions.length,
+    );
 
-  // 🔥 3. UPDATE STREAK
-  await ApiService.updateStreak(uid);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Dialog(
+        backgroundColor: const Color(0xFF111827),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.emoji_events,
+                size: 70,
+                color: Colors.orangeAccent,
+              ),
+              const SizedBox(height: 12),
 
-  // 📊 4. SAVE TEST RESULT
-  await ApiService.updateScore(
-    uid: uid,
-    chapter: widget.chapterNumber,
-    score: score,
-    total: questions.length,
-  );
+              const Text(
+                "MISSION COMPLETE",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  letterSpacing: 1,
+                ),
+              ),
 
-  showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+              const SizedBox(height: 12),
+
+              Text(
+                "Score: $score / ${questions.length}",
+                style: const TextStyle(color: Colors.white70),
+              ),
+
+              const SizedBox(height: 10),
+
+              LinearProgressIndicator(
+                value: score / questions.length,
+                backgroundColor: Colors.white12,
+                color: Colors.greenAccent,
+              ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                "${percentage.toStringAsFixed(1)}% Accuracy",
+                style: const TextStyle(
+                  color: Colors.greenAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orangeAccent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  "Continue",
+                  style: TextStyle(color: Colors.white),
+                ),
+              )
+            ],
+          ),
+        ),
       ),
-      title: const Text("🎉 Test Completed"),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            "Score: $score / ${questions.length}",
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-
-          LinearProgressIndicator(
-            value: score / questions.length,
-            color: AppTheme.primary,
-            backgroundColor: AppTheme.muted,
-          ),
-
-          const SizedBox(height: 12),
-
-          Text(
-            "${percentage.toStringAsFixed(1)}%",
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.primary,
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primary,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-            Navigator.pop(context);
-          },
-          child: const Text("Continue"),
-        )
-      ],
-    ),
-  );
-}
+    );
+  }
 
   Color _optionColor(int index) {
-    if (!showAnswer) return AppTheme.surface;
+    if (!showAnswer) return const Color(0xFF111827);
 
     final correct = questions[currentIndex].answer;
 
-    if (index == correct) {
-      return Colors.green.withOpacity(0.12);
-    }
+    if (index == correct) return Colors.green.withOpacity(0.15);
+    if (index == selectedIndex) return Colors.red.withOpacity(0.15);
 
-    if (index == selectedIndex) {
-      return Colors.red.withOpacity(0.12);
-    }
-
-    return AppTheme.surface;
+    return const Color(0xFF111827);
   }
 
   Color _borderColor(int index) {
-    if (!showAnswer) return AppTheme.muted;
+    if (!showAnswer) return Colors.white12;
 
     final correct = questions[currentIndex].answer;
 
-    if (index == correct) return Colors.green;
-    if (index == selectedIndex) return Colors.red;
+    if (index == correct) return Colors.greenAccent;
+    if (index == selectedIndex) return Colors.redAccent;
 
-    return AppTheme.muted;
+    return Colors.white12;
   }
 
   @override
   Widget build(BuildContext context) {
     if (questions.isEmpty) {
       return const Scaffold(
-        backgroundColor: AppTheme.background,
-        body: Center(child: CircularProgressIndicator()),
+        backgroundColor: Color(0xFF0B0F1A),
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.orangeAccent),
+        ),
       );
     }
 
     final q = questions[currentIndex];
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: const Color(0xFF0B0F1A),
 
-      /// 🌟 APP BAR
+      /// 🧠 APP BAR
       appBar: AppBar(
+        backgroundColor: const Color(0xFF111827),
         elevation: 0,
-        backgroundColor: AppTheme.surface,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
-          "Chapter ${widget.chapterNumber} Test",
+          "CHAPTER ${widget.chapterNumber}",
           style: const TextStyle(
-            color: AppTheme.textPrimary,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 15,
+            letterSpacing: 1,
+            fontSize: 14,
           ),
         ),
       ),
@@ -204,8 +226,8 @@ class _TestScreenState extends State<TestScreen> {
               borderRadius: BorderRadius.circular(10),
               child: LinearProgressIndicator(
                 value: (currentIndex + 1) / questions.length,
-                color: AppTheme.primary,
-                backgroundColor: AppTheme.muted,
+                backgroundColor: Colors.white12,
+                color: Colors.orangeAccent,
                 minHeight: 8,
               ),
             ),
@@ -217,23 +239,17 @@ class _TestScreenState extends State<TestScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.surface,
+                color: const Color(0xFF111827),
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x0D000000),
-                    blurRadius: 10,
-                    offset: Offset(0, 5),
-                  )
-                ],
+                border: Border.all(color: Colors.white10),
               ),
               child: Text(
                 "Q${currentIndex + 1}. ${q.question}",
                 style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
                   height: 1.4,
-                  color: AppTheme.textPrimary,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -245,12 +261,10 @@ class _TestScreenState extends State<TestScreen> {
               child: ListView.builder(
                 itemCount: q.options.length,
                 itemBuilder: (context, index) {
-                  final option = q.options[index];
-
                   return GestureDetector(
                     onTap: () => checkAnswer(index),
                     child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
+                      duration: const Duration(milliseconds: 200),
                       margin: const EdgeInsets.only(bottom: 10),
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
@@ -258,21 +272,19 @@ class _TestScreenState extends State<TestScreen> {
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                           color: _borderColor(index),
-                          width: 1.2,
                         ),
                       ),
                       child: Row(
                         children: [
                           Expanded(
                             child: Text(
-                              option,
+                              q.options[index],
                               style: const TextStyle(
+                                color: Colors.white,
                                 fontSize: 14.5,
-                                color: AppTheme.textPrimary,
                               ),
                             ),
                           ),
-
                           if (showAnswer)
                             Icon(
                               index == q.answer
@@ -281,8 +293,8 @@ class _TestScreenState extends State<TestScreen> {
                                       ? Icons.cancel
                                       : null),
                               color: index == q.answer
-                                  ? Colors.green
-                                  : Colors.red,
+                                  ? Colors.greenAccent
+                                  : Colors.redAccent,
                             ),
                         ],
                       ),
@@ -292,13 +304,13 @@ class _TestScreenState extends State<TestScreen> {
               ),
             ),
 
-            /// 🔥 CTA BUTTON
+            /// 🔥 BUTTON
             SizedBox(
               width: double.infinity,
               height: 52,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.secondary,
+                  backgroundColor: Colors.orangeAccent,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -306,11 +318,12 @@ class _TestScreenState extends State<TestScreen> {
                 onPressed: showAnswer ? nextQuestion : null,
                 child: Text(
                   currentIndex == questions.length - 1
-                      ? "Finish Test"
-                      : "Next Question",
+                      ? "FINISH MISSION"
+                      : "NEXT QUESTION",
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
                   ),
                 ),
               ),

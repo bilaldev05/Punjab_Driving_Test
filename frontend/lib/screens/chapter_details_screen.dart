@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/services/api_service.dart';
-import '../app_theme.dart';
 import '../models/rule.dart';
 import '../screens/test_screen.dart';
 
@@ -10,6 +9,7 @@ class ChapterDetailScreen extends StatelessWidget {
 
   const ChapterDetailScreen({super.key, required this.rule});
 
+  /// 📄 SUBSECTION RENDERER (UNCHANGED LOGIC, CLEAN UI WRAP)
   Widget buildSubsections(dynamic subsection) {
     if (subsection == null) return const SizedBox.shrink();
 
@@ -22,7 +22,7 @@ class ChapterDetailScreen extends StatelessWidget {
             const Text(
               "• ",
               style: TextStyle(
-                color: AppTheme.primary,
+                color: Colors.greenAccent,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -32,7 +32,7 @@ class ChapterDetailScreen extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 14.5,
                   height: 1.6,
-                  color: AppTheme.textSecondary,
+                  color: Colors.white70,
                 ),
               ),
             ),
@@ -59,53 +59,46 @@ class ChapterDetailScreen extends StatelessWidget {
     final sections = rule.sections ?? [];
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: const Color(0xFF0B0F1A),
 
-      /// 🌟 PREMIUM APP BAR
+      /// 🧠 APP BAR (GAMING STYLE)
       appBar: AppBar(
+        backgroundColor: const Color(0xFF111827),
         elevation: 0,
-        backgroundColor: AppTheme.surface,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
           rule.title,
           style: const TextStyle(
-            color: AppTheme.textPrimary,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 16,
+            letterSpacing: 0.5,
           ),
         ),
       ),
 
       body: Column(
         children: [
-          /// 📘 HEADER CARD
+          /// 📘 HERO HEADER (MISSION BRIEF)
           Container(
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.surface,
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1F1C2C), Color(0xFF928DAB)],
+              ),
               borderRadius: BorderRadius.circular(16),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x0D000000),
-                  blurRadius: 12,
-                  offset: Offset(0, 6),
-                )
-              ],
             ),
             child: Row(
-              children: [
-                const Icon(Icons.menu_book_rounded,
-                    color: AppTheme.primary),
-
-                const SizedBox(width: 10),
-
+              children: const [
+                Icon(Icons.menu_book_rounded, color: Colors.white),
+                SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    "Read carefully and understand each rule before attempting the test.",
+                    "Study carefully before entering the test. Every rule matters in survival mode.",
                     style: TextStyle(
                       fontSize: 13,
-                      color: AppTheme.textSecondary,
+                      color: Colors.white70,
                       height: 1.4,
                     ),
                   ),
@@ -114,7 +107,7 @@ class ChapterDetailScreen extends StatelessWidget {
             ),
           ),
 
-          /// 📄 CONTENT LIST
+          /// 📄 CONTENT
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -123,36 +116,38 @@ class ChapterDetailScreen extends StatelessWidget {
                 final section = sections[index];
 
                 return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
+                  margin: const EdgeInsets.only(bottom: 14),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppTheme.surface,
+                    color: const Color(0xFF111827),
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.white10,
+                    ),
                     boxShadow: const [
                       BoxShadow(
-                        color: Color(0x0D000000),
+                        color: Color(0x33000000),
                         blurRadius: 10,
-                        offset: Offset(0, 5),
+                        offset: Offset(0, 6),
                       )
                     ],
                   ),
-
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       /// SECTION TITLE
                       Text(
-                        "${section['section']} • ${section['title']}",
+                        "Chapter ${section['section']} • ${section['title']}",
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
-                          color: AppTheme.primary,
+                          color: Colors.greenAccent,
                         ),
                       ),
 
                       const SizedBox(height: 10),
 
-                      /// SUBSECTIONS
+                      /// CONTENT
                       buildSubsections(section['subsections']),
                     ],
                   ),
@@ -161,64 +156,62 @@ class ChapterDetailScreen extends StatelessWidget {
             ),
           ),
 
-          /// 🔥 PREMIUM CTA BUTTON
-         Padding(
-  padding: const EdgeInsets.all(16),
-  child: SizedBox(
-    width: double.infinity,
-    height: 52,
-    child: ElevatedButton.icon(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppTheme.secondary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
-      ),
+          /// 🎮 START MISSION BUTTON (GAMING CTA)
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orangeAccent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                icon: const Icon(Icons.rocket_launch, color: Colors.white),
+                label: const Text(
+                  "START MISSION TEST",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+                onPressed: () async {
+                  final user = FirebaseAuth.instance.currentUser;
 
-      icon: const Icon(Icons.play_arrow, color: Colors.white),
+                  if (user == null) return;
 
-      onPressed: () async {
-        final user = FirebaseAuth.instance.currentUser;
+                  if (rule.chapterNumber == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Chapter number missing!"),
+                      ),
+                    );
+                    return;
+                  }
 
-        if (user == null) return;
+                  // 📘 mark progress
+                  await ApiService.updateChapter(
+                    user.uid,
+                    "Chapter ${rule.chapterNumber} • ${rule.title}",
+                    0.1,
+                  );
 
-        if (rule.chapterNumber == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Chapter number missing!"),
-            ),
-          );
-          return;
-        }
-
-        // 📘 Update chapter progress (user started chapter)
-        await ApiService.updateChapter(
-          user.uid,
-          "Chapter ${rule.chapterNumber} • ${rule.title}",
-          0.1,
-        );
-
-        // 🚀 Navigate to test
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => TestScreen(
-              chapterNumber: rule.chapterNumber!,
+                  // 🚀 start test
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => TestScreen(
+                        chapterNumber: rule.chapterNumber!,
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
-        );
-      },
-
-      label: const Text(
-        "Start Chapter Test",
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    ),
-  ),
-)
         ],
       ),
     );

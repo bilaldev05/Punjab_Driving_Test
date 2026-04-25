@@ -18,8 +18,9 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
   int lives = 3;
   int score = 0;
   int streak = 0;
-  int xpEarned = 0;
-int earnedXp = 0;
+
+  int earnedXp = 0;
+
   int? selectedIndex;
   bool showAnswer = false;
 
@@ -34,7 +35,6 @@ int earnedXp = 0;
     loadQuestions();
   }
 
-  // 🔥 LOAD QUESTIONS
   void loadQuestions() async {
     final data = await ApiService.getSurvivalQuestions();
 
@@ -43,19 +43,17 @@ int earnedXp = 0;
         .where((q) => q.options.isNotEmpty)
         .toList();
 
-    if (mounted) {
-      setState(() {});
-      startTimer();
-    }
+    if (!mounted) return;
+    setState(() {});
+    startTimer();
   }
 
-  // ⏱ TIMER
   void startTimer() {
     timer?.cancel();
     timeLeft = 10;
 
     timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!mounted) return;
+      if (!mounted || gameEnded) return;
 
       if (timeLeft <= 0) {
         handleWrong();
@@ -65,21 +63,18 @@ int earnedXp = 0;
     });
   }
 
-  // ✅ CORRECT ANSWER
   void handleCorrect() {
-  timer?.cancel();
+    timer?.cancel();
 
-  streak++;
-  int bonus = streak >= 3 ? 5 : 0;
+    streak++;
+    int bonus = streak >= 3 ? 5 : 0;
 
-  score += 10 + bonus;
+    score += 10 + bonus;
+    earnedXp += 5 + bonus;
 
-  earnedXp += 5 + bonus; // ✅ NOW VALID
+    nextQuestion();
+  }
 
-  nextQuestion();
-}
-
-  // ❌ WRONG ANSWER
   void handleWrong() {
     timer?.cancel();
 
@@ -94,9 +89,8 @@ int earnedXp = 0;
     nextQuestion();
   }
 
-  // 🔁 NEXT QUESTION
   void nextQuestion() {
-    Future.delayed(const Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 400), () {
       if (!mounted) return;
 
       if (currentIndex >= questions.length - 1) {
@@ -114,7 +108,6 @@ int earnedXp = 0;
     });
   }
 
-  // 👆 SELECT ANSWER
   void selectAnswer(int index) {
     if (showAnswer || gameEnded) return;
 
@@ -132,97 +125,118 @@ int earnedXp = 0;
     }
   }
 
-  // 🏁 END GAME (IMPORTANT FIX)
- void endGame() async {
-  if (gameEnded) return;
-  gameEnded = true;
+  void endGame() async {
+    if (gameEnded) return;
+    gameEnded = true;
 
-  timer?.cancel();
+    timer?.cancel();
 
-  final name = await LocalStorageService.getUserName();
+    final name = await LocalStorageService.getUserName();
 
-  if (name != null) {
-    await ApiService.saveSurvivalScore(
-      name: name,
-      score: score,
+    if (name != null) {
+      await ApiService.saveSurvivalScore(name: name, score: score);
+    }
+
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Dialog(
+        backgroundColor: const Color(0xFF111827),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.emoji_events,
+                  size: 80, color: Colors.amber),
+
+              const SizedBox(height: 12),
+
+              const Text(
+                "MISSION COMPLETE",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 1,
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              _resultRow("Score", "$score"),
+              _resultRow("XP Earned", "$earnedXp"),
+              _resultRow("Best Streak", "$streak 🔥"),
+
+              const SizedBox(height: 20),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orangeAccent,
+                    padding: const EdgeInsets.all(14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pop(context, earnedXp);
+                  },
+                  child: const Text("Continue",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  if (!mounted) return;
-
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (_) => Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+  Widget _resultRow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title,
+              style: const TextStyle(color: Colors.white70)),
+          Text(value,
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold)),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.emoji_events,
-                size: 70, color: Colors.orange),
+    );
+  }
 
-            const SizedBox(height: 10),
-
-            const Text(
-              "Game Over",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            Text("Score: $score"),
-            Text("XP Earned: $earnedXp"), // ✅ FIXED
-            Text("Best Streak: $streak 🔥"),
-
-            const SizedBox(height: 20),
-
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pop(context, earnedXp); // ✅ FIXED
-              },
-              child: const Text("Continue"),
-            )
-          ],
-        ),
-      ),
-    ),
-  );
-}
-  // 🎨 COLORS
   Color getColor(int index) {
-    if (!showAnswer) return Colors.white;
+    if (!showAnswer) return const Color(0xFF1F2937);
 
     final correct = questions[currentIndex].answer;
 
     if (index == correct) {
-      return Colors.green.withOpacity(0.3);
+      return const Color(0xFF14532D); // green glow
     }
 
     if (selectedIndex == index) {
-      return Colors.red.withOpacity(0.3);
+      return const Color(0xFF7F1D1D); // red glow
     }
 
-    return Colors.white;
-  }
-
-  @override
-  void dispose() {
-    timer?.cancel();
-    super.dispose();
+    return const Color(0xFF1F2937);
   }
 
   @override
   Widget build(BuildContext context) {
     if (questions.isEmpty) {
       return const Scaffold(
+        backgroundColor: Color(0xFF0B0F1A),
         body: Center(child: CircularProgressIndicator()),
       );
     }
@@ -230,19 +244,18 @@ int earnedXp = 0;
     final q = questions[currentIndex];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: const Color(0xFF0B0F1A),
 
       appBar: AppBar(
-        title: const Text("🔥 Survival Mode"),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: const Color(0xFF111827),
+        title: const Text("🔥 Survival Mode", style: TextStyle(color: Colors.white),),
       ),
 
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-
-            /// ❤️ LIVES + SCORE
+            /// HUD
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -251,70 +264,79 @@ int earnedXp = 0;
                     3,
                     (i) => Icon(
                       Icons.favorite,
-                      color: i < lives ? Colors.red : Colors.grey,
+                      color: i < lives ? Colors.redAccent : Colors.white10,
                     ),
                   ),
                 ),
-                Text("Score: $score"),
+                Text(
+                  "Score: $score",
+                  style: const TextStyle(color: Colors.white),
+                ),
               ],
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
 
-            /// ⏱ TIMER
-            LinearProgressIndicator(
-              value: timeLeft / 10,
-              minHeight: 8,
-              backgroundColor: Colors.grey.shade300,
-              color: Colors.orange,
-            ),
-
-            const SizedBox(height: 10),
-
-            /// 🔥 STREAK
-            if (streak >= 2)
-              Text(
-                "🔥 Streak x$streak",
-                style: const TextStyle(
-                  color: Colors.orange,
-                  fontWeight: FontWeight.bold,
-                ),
+            /// TIMER BAR
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: LinearProgressIndicator(
+                value: timeLeft / 10,
+                minHeight: 10,
+                backgroundColor: Colors.white10,
+                color: Colors.orangeAccent,
               ),
+            ),
 
             const SizedBox(height: 20),
 
-            /// QUESTION
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
+            /// QUESTION CARD
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: const Color(0xFF111827),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: Colors.white10),
+              ),
               child: Text(
                 q.question,
-                key: ValueKey(q.question),
                 style: const TextStyle(
                   fontSize: 18,
+                  color: Colors.white,
                   fontWeight: FontWeight.w600,
+                  height: 1.4,
                 ),
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 18),
 
             /// OPTIONS
-            ...List.generate(q.options.length, (index) {
-              return GestureDetector(
-                onTap: () => selectAnswer(index),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  margin: const EdgeInsets.symmetric(vertical: 6),
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: getColor(index),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: Text(q.options[index]),
-                ),
-              );
-            }),
+            Expanded(
+              child: ListView.builder(
+                itemCount: q.options.length,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () => selectAnswer(index),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: getColor(index),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: Text(
+                        q.options[index],
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),

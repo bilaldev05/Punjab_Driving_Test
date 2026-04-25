@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../app_theme.dart';
+
 import '../models/rule.dart';
 import '../screens/chapter_details_screen.dart';
 import '../services/api_service.dart';
@@ -34,55 +34,56 @@ class _RuleBookScreenState extends State<RuleBookScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return const Scaffold(
-        backgroundColor: AppTheme.background,
-        body: Center(child: CircularProgressIndicator()),
+        backgroundColor: Color(0xFF0B0F1A),
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.orangeAccent),
+        ),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: const Color(0xFF0B0F1A),
 
-      /// 🧠 PREMIUM APP BAR
+      /// 🧠 GAME APP BAR
       appBar: AppBar(
+        backgroundColor: const Color(0xFF111827),
         elevation: 0,
-        backgroundColor: AppTheme.surface,
+        centerTitle: true,
         title: const Text(
-          "Chapters",
+          "RULE CHAPTERS",
           style: TextStyle(
-            color: AppTheme.textPrimary,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
+            letterSpacing: 1,
+            fontSize: 16,
           ),
         ),
-        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
 
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          /// 📘 HEADER INFO CARD
+          /// 📘 HEADER CARD (MISSION BRIEF)
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.surface,
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1F1C2C), Color(0xFF928DAB)],
+              ),
               borderRadius: BorderRadius.circular(16),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x0D000000),
-                  blurRadius: 12,
-                  offset: Offset(0, 6),
-                )
-              ],
             ),
             child: const Row(
               children: [
-                Icon(Icons.menu_book_rounded, color: AppTheme.primary),
+                Icon(Icons.menu_book_rounded, color: Colors.white),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    "Learn all driving rules step by step. Tap a chapter to start learning.",
+                    "Complete all chapters to unlock survival mastery mode.",
                     style: TextStyle(
-                      color: AppTheme.textSecondary,
+                      color: Colors.white70,
                       fontSize: 13,
+                      height: 1.4,
                     ),
                   ),
                 ),
@@ -107,8 +108,7 @@ class _RuleBookScreenState extends State<RuleBookScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) =>
-                          ChapterDetailScreen(rule: rule),
+                      builder: (_) => ChapterDetailScreen(rule: rule),
                     ),
                   );
                 },
@@ -122,7 +122,7 @@ class _RuleBookScreenState extends State<RuleBookScreen> {
 }
 
 //////////////////////////////////////////////////////////////////
-/// 📘 CHAPTER CARD (PREMIUM DESIGN)
+/// 🎮 GAMING CHAPTER CARD
 //////////////////////////////////////////////////////////////////
 
 class _ChapterCard extends StatelessWidget {
@@ -138,18 +138,20 @@ class _ChapterCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppTheme.surface,
+          color: const Color(0xFF111827),
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Colors.white10,
+          ),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x0D000000),
+              color: Color(0x33000000),
               blurRadius: 12,
               offset: Offset(0, 6),
             )
@@ -157,26 +159,35 @@ class _ChapterCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            /// 🔢 CHAPTER BADGE
+            /// 🔢 LEVEL BADGE
             Container(
-              height: 42,
-              width: 42,
+              height: 46,
+              width: 46,
               decoration: BoxDecoration(
-                color: AppTheme.muted,
-                borderRadius: BorderRadius.circular(12),
+                gradient: const LinearGradient(
+                  colors: [Colors.greenAccent, Colors.teal],
+                ),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.greenAccent.withOpacity(0.3),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  )
+                ],
               ),
               child: Center(
                 child: Text(
                   "$index",
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.primary,
+                    color: Colors.black,
                   ),
                 ),
               ),
             ),
 
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
 
             /// TITLE
             Expanded(
@@ -185,7 +196,7 @@ class _ChapterCard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.textPrimary,
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -193,7 +204,7 @@ class _ChapterCard extends StatelessWidget {
             const Icon(
               Icons.arrow_forward_ios,
               size: 14,
-              color: AppTheme.textSecondary,
+              color: Colors.white30,
             ),
           ],
         ),
