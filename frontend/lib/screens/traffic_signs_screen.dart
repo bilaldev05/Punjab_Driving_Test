@@ -159,7 +159,7 @@ class _TrafficSignsScreenState extends State<TrafficSignsScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Options
+                      
                       Expanded(
                         child: ListView(
                           children: [
