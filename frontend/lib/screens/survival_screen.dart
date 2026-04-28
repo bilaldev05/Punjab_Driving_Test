@@ -222,7 +222,7 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
     final correct = questions[currentIndex].answer;
 
     if (index == correct) {
-      return const Color(0xFF14532D); // green glow
+      return const Color(0xFF14532D); 
     }
 
     if (selectedIndex == index) {
