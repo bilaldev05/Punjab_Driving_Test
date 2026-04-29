@@ -255,7 +255,7 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            /// HUD
+            
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
