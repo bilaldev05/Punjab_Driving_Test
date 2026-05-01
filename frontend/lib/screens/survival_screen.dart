@@ -290,7 +290,6 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
 
             const SizedBox(height: 20),
 
-            /// QUESTION CARD
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(18),
