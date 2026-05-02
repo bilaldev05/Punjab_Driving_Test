@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend/services/api_service.dart';
 import '../models/questions.dart';
-import '../services/api_service.dart';
 
 class TestScreen extends StatefulWidget {
   final int chapterNumber;
@@ -18,6 +18,7 @@ class _TestScreenState extends State<TestScreen> {
   int score = 0;
   int? selectedIndex;
   bool showAnswer = false;
+  List<Map<String, dynamic>> wrongAnswers = [];
 
   @override
   void initState() {
@@ -38,14 +39,42 @@ class _TestScreenState extends State<TestScreen> {
   void checkAnswer(int index) {
     if (showAnswer) return;
 
+    final isCorrect = index == questions[currentIndex].answer;
+
     setState(() {
       selectedIndex = index;
       showAnswer = true;
 
-      if (index == questions[currentIndex].answer) {
+      if (isCorrect) {
         score++;
       }
     });
+
+    submitAnswer(isCorrect, index);
+  }
+
+  Future<void> submitAnswer(bool isCorrect, int index) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final question = questions[currentIndex];
+
+    await ApiService.saveResult(
+  userId: user.uid,
+  chapter: widget.chapterNumber,
+  score: isCorrect ? 1 : 0,
+  total: 1,
+  wrongAnswers: isCorrect
+      ? []
+      : [
+          {
+            "question": question.question,
+            "correct": question.options[question.answer],
+            "user_answer": question.options[index],
+            "topic": question.topic
+          }
+        ],
+);
   }
 
   void nextQuestion() {
@@ -102,7 +131,6 @@ class _TestScreenState extends State<TestScreen> {
                 color: Colors.orangeAccent,
               ),
               const SizedBox(height: 12),
-
               const Text(
                 "MISSION COMPLETE",
                 style: TextStyle(
@@ -112,24 +140,18 @@ class _TestScreenState extends State<TestScreen> {
                   letterSpacing: 1,
                 ),
               ),
-
               const SizedBox(height: 12),
-
               Text(
                 "Score: $score / ${questions.length}",
                 style: const TextStyle(color: Colors.white70),
               ),
-
               const SizedBox(height: 10),
-
               LinearProgressIndicator(
                 value: score / questions.length,
                 backgroundColor: Colors.white12,
                 color: Colors.greenAccent,
               ),
-
               const SizedBox(height: 10),
-
               Text(
                 "${percentage.toStringAsFixed(1)}% Accuracy",
                 style: const TextStyle(
@@ -137,9 +159,7 @@ class _TestScreenState extends State<TestScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
               const SizedBox(height: 20),
-
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orangeAccent,
@@ -201,7 +221,6 @@ class _TestScreenState extends State<TestScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0B0F1A),
 
-      /// 🧠 APP BAR
       appBar: AppBar(
         backgroundColor: const Color(0xFF111827),
         elevation: 0,
@@ -221,7 +240,6 @@ class _TestScreenState extends State<TestScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            /// 📊 PROGRESS BAR
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: LinearProgressIndicator(
@@ -234,7 +252,6 @@ class _TestScreenState extends State<TestScreen> {
 
             const SizedBox(height: 16),
 
-            /// 🧠 QUESTION CARD
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -256,7 +273,6 @@ class _TestScreenState extends State<TestScreen> {
 
             const SizedBox(height: 16),
 
-            /// 📋 OPTIONS
             Expanded(
               child: ListView.builder(
                 itemCount: q.options.length,
@@ -304,7 +320,6 @@ class _TestScreenState extends State<TestScreen> {
               ),
             ),
 
-            /// 🔥 BUTTON
             SizedBox(
               width: double.infinity,
               height: 52,

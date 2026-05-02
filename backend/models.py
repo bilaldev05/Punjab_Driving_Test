@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional, Dict
+from typing import List, Optional, Dict
 from datetime import datetime
 
 
@@ -63,10 +63,20 @@ class User(BaseModel):
 # -----------------------------
 # Result Model
 # -----------------------------
+
+class WrongAnswer(BaseModel):
+    question: str
+    correct: str
+    user_answer: str
+    topic: str
+
+
 class Result(BaseModel):
     user_id: str
+    chapter: int
     score: int
     total: int
+    wrong_answers: List[WrongAnswer] = []
 
     # exam type
     exam_type: Optional[str] = "practice"

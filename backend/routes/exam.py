@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from database import questions_collection
+from database.database import questions_collection
 from schemas import question_serializer
 
 router = APIRouter(prefix="/exam")

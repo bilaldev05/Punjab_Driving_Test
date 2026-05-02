@@ -3,12 +3,14 @@ import 'dart:math';
 class Question {
   final String question;
   final List<String> options;
+  final String topic; // ✅ ADD THIS
   int answer;
 
   Question({
     required this.question,
     required this.options,
     required this.answer,
+    required this.topic, // ✅ ADD THIS
   });
 
   factory Question.fromJson(Map<String, dynamic> json, {bool shuffle = true}) {
@@ -21,22 +23,33 @@ class Question {
         ? json['answer']
         : int.tryParse(json['answer']?.toString() ?? '') ?? 0;
 
-    // 🔥 prevent crash if answer out of range
     if (ans >= opts.length) ans = 0;
 
+    final topic = json['topic']?.toString() ?? "general"; // ✅ ADD THIS
+
     if (shuffle) {
-      return _shuffleOptions(json['question']?.toString() ?? '', opts, ans);
+      return _shuffleOptions(
+        json['question']?.toString() ?? '',
+        opts,
+        ans,
+        topic,
+      );
     } else {
       return Question(
         question: json['question'] ?? '',
         options: opts,
         answer: ans,
+        topic: topic,
       );
     }
   }
 
   static Question _shuffleOptions(
-      String question, List<String> options, int correctIndex) {
+    String question,
+    List<String> options,
+    int correctIndex,
+    String topic,
+  ) {
     final rand = Random();
 
     final paired = options
@@ -54,6 +67,7 @@ class Question {
       question: question,
       options: shuffledOptions,
       answer: newAnswer,
+      topic: topic, // ✅ KEEP IT
     );
   }
 }

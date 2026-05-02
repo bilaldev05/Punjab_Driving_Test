@@ -1,9 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from database import users_collection
+from database.database import users_collection
 from datetime import date
 from routes import survival
+from services.ai_service import get_ai_suggestion
+from services.ai_service import get_ai_suggestion
+from services.ai_helper import extract_weak_topics, format_mistakes
+import json
+from database.redis_client import redis_client
+
 
 
 from routes import (
@@ -24,15 +30,12 @@ app = FastAPI(title="Punjab Driving Test API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # for testing allow all
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# -----------------------------
-# ROUTERS
-# -----------------------------
 
 app.include_router(users.router)
 app.include_router(questions.router)
@@ -47,10 +50,6 @@ app.include_router(rulebook.router)
 
 
 
-
-# -----------------------------
-# ROOT
-# -----------------------------
 
 @app.get("/")
 def home():
@@ -82,7 +81,7 @@ def get_or_create_user(user_id: str):
 
 @app.get("/dashboard/{user_id}")
 def get_dashboard(user_id: str):
-    user = users_collection.find_one({"user_id": user_id})  # 🔥 direct fetch
+    user = users_collection.find_one({"user_id": user_id})  
 
     if not user:
         user = get_or_create_user(user_id)
@@ -102,7 +101,7 @@ class XPUpdate(BaseModel):
 def add_xp(data: XPUpdate):
     user = users_collection.find_one({"user_id": data.user_id})
 
-    # 🔥 if user doesn't exist → create it safely
+    
     if not user:
         users_collection.insert_one({
             "user_id": data.user_id,
@@ -121,7 +120,7 @@ def add_xp(data: XPUpdate):
         {"$inc": {"xp": data.xp}}
     )
 
-    # 🔥 fetch updated user
+   
     updated_user = users_collection.find_one({"user_id": data.user_id})
 
     return {
@@ -169,4 +168,43 @@ def update_streak(user_id: str):
         )
 
     return {"message": "Streak updated"}
+
+
+
+
+
+@app.get("/ai-coach/{user_id}")
+def ai_coach(user_id: str):
+    cache_key = f"ai_coach:{user_id}"
+
+    
+    cached = redis_client.get(cache_key)
+    if cached:
+        return {"advice": cached}
+
+   
+    user = users_collection.find_one({"user_id": user_id})
+
+    if not user:
+        return {"message": "User not found"}
+
+    data = {
+        "xp": user.get("xp", 0),
+        "streak": user.get("streak", 0),
+        "progress": user.get("progress", 0),
+        "weak_topics": extract_weak_topics(user.get("mistakes", [])),
+        "wrong_answers": format_mistakes(user.get("mistakes", []))
+    }
+
+    suggestion = get_ai_suggestion(data)
+
+    
+    redis_client.setex(
+        cache_key,
+        3600,  # 1 hour cache
+        suggestion
+    )
+
+    return {"advice": suggestion}
+
     # python -m uvicorn main:app --reload 

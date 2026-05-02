@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/ai_coach_screen.dart';
 import 'package:frontend/screens/survival_screen.dart';
 import 'package:frontend/services/api_service.dart';
 
@@ -19,12 +20,16 @@ class _HomeScreenState extends State<HomeScreen> {
   int streak = 0;
   String continueChapter = "";
   bool loading = true;
+  
 
   @override
   void initState() {
     super.initState();
     loadDashboard();
   }
+
+
+  
 
   Future<void> loadDashboard() async {
     try {
@@ -44,6 +49,8 @@ class _HomeScreenState extends State<HomeScreen> {
       print("Error: $e");
     }
   }
+
+  
 
   Future<void> addXp(int earnedXp) async {
     final user = FirebaseAuth.instance.currentUser;
@@ -237,6 +244,28 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
+ const SizedBox(height: 12),
+
+           _GameModeCard(
+  title: "AI COACH",
+  subtitle: "Personalized driving guidance",
+  icon: Icons.psychology,
+  color: Colors.deepPurpleAccent,
+  glow: true,
+  onTap: () {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AiCoachScreen(uid: user.uid),
+      ),
+    );
+  },
+),
+
           ],
         ),
       ),
@@ -506,4 +535,6 @@ class _QuickNavCard extends StatelessWidget {
       ),
     );
   }
+
+  
 }

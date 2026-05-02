@@ -1,11 +1,11 @@
 from fastapi import APIRouter, HTTPException
 from models import User
-from database import users_collection
+from database.database import users_collection
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 from fastapi import APIRouter
-from database import users_collection
+from database.database import users_collection
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
