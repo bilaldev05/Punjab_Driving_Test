@@ -311,7 +311,7 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
 
             const SizedBox(height: 18),
 
-            /// OPTIONS
+            
             Expanded(
               child: ListView.builder(
                 itemCount: q.options.length,
