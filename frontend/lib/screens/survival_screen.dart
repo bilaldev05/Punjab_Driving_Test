@@ -226,7 +226,7 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
     }
 
     if (selectedIndex == index) {
-      return const Color(0xFF7F1D1D); // red glow
+      return const Color(0xFF7F1D1D); 
     }
 
     return const Color(0xFF1F2937);
