@@ -277,7 +277,7 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
 
             const SizedBox(height: 12),
 
-            /// TIMER BAR
+            
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: LinearProgressIndicator(
