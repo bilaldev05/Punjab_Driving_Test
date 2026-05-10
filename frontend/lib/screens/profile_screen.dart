@@ -75,7 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: Column(
         children: [
 
-          /// 🎮 GAME HEADER
+          
           Container(
             padding: const EdgeInsets.fromLTRB(16, 50, 16, 20),
             decoration: const BoxDecoration(
