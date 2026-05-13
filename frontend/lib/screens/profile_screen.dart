@@ -122,7 +122,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.all(16),
               children: [
 
-                /// 📊 HUD STATS
+                
                 Row(
                   children: [
                     Expanded(
