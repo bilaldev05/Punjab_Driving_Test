@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../models/rule.dart';
@@ -5,7 +6,12 @@ import '../screens/chapter_details_screen.dart';
 import '../services/api_service.dart';
 
 class RuleBookScreen extends StatefulWidget {
-  const RuleBookScreen({super.key});
+  final bool showMissionButton;
+
+  const RuleBookScreen({
+    super.key,
+    this.showMissionButton = true,
+  });
 
   @override
   State<RuleBookScreen> createState() => _RuleBookScreenState();
@@ -14,11 +20,18 @@ class RuleBookScreen extends StatefulWidget {
 class _RuleBookScreenState extends State<RuleBookScreen> {
   List<Rule> rules = [];
   bool isLoading = true;
+  List<dynamic> chapterProgress = [];
+  bool isUnlocked = false;
+  List<int> unlockedChapters = [];
 
   @override
   void initState() {
     super.initState();
     loadRules();
+
+    if (widget.showMissionButton) {
+      loadUnlockStatus();
+    }
   }
 
   void loadRules() async {
@@ -28,6 +41,24 @@ class _RuleBookScreenState extends State<RuleBookScreen> {
       debugPrint("Error: $e");
     }
     setState(() => isLoading = false);
+  }
+
+  void loadUnlockStatus() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final result = await ApiService.getUnlockedChapters(user.uid);
+
+    setState(() {
+      unlockedChapters = List<int>.from(result);
+    });
+  }
+
+  bool isChapterLocked(int index) {
+    if (!widget.showMissionButton) return false;
+
+    final chapterNumber = index + 1;
+    return !unlockedChapters.contains(chapterNumber);
   }
 
   @override
@@ -44,7 +75,6 @@ class _RuleBookScreenState extends State<RuleBookScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0B0F1A),
 
-      /// 🧠 GAME APP BAR
       appBar: AppBar(
         backgroundColor: const Color(0xFF111827),
         elevation: 0,
@@ -64,7 +94,8 @@ class _RuleBookScreenState extends State<RuleBookScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          /// 📘 HEADER CARD (MISSION BRIEF)
+
+          /// 📘 HEADER
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -73,21 +104,15 @@ class _RuleBookScreenState extends State<RuleBookScreen> {
               ),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Row(
-              children: [
-                Icon(Icons.menu_book_rounded, color: Colors.white),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    "Complete all chapters to unlock survival mastery mode.",
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 13,
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-              ],
+            child: Text(
+              widget.showMissionButton
+                  ? "Complete Chapter 2 test to unlock Rule Battle mode progression."
+                  : "Read all rules freely. No restrictions in Study Mode.",
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 13,
+                height: 1.4,
+              ),
             ),
           ),
 
@@ -100,18 +125,34 @@ class _RuleBookScreenState extends State<RuleBookScreen> {
             physics: const NeverScrollableScrollPhysics(),
             itemBuilder: (context, index) {
               final rule = rules[index];
+              final locked = isChapterLocked(index);
 
               return _ChapterCard(
                 index: index + 1,
                 title: rule.title,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ChapterDetailScreen(rule: rule),
-                    ),
-                  );
-                },
+                locked: locked,
+                onTap: locked
+                    ? () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("🔒 Chapter locked!"),
+                          ),
+                        );
+                      }
+                    : () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ChapterDetailScreen(
+                              rule: rule,
+                              showMissionButton: widget.showMissionButton,
+                            ),
+                          ),
+                        );
+
+                        // ✅ REFRESH AFTER RETURN
+                        loadUnlockStatus();
+                      },
               );
             },
           ),
@@ -122,92 +163,98 @@ class _RuleBookScreenState extends State<RuleBookScreen> {
 }
 
 //////////////////////////////////////////////////////////////////
-/// 🎮 GAMING CHAPTER CARD
+/// 🎮 CHAPTER CARD
 //////////////////////////////////////////////////////////////////
 
 class _ChapterCard extends StatelessWidget {
   final int index;
   final String title;
   final VoidCallback onTap;
+  final bool locked;
 
   const _ChapterCard({
     required this.index,
     required this.title,
     required this.onTap,
+    this.locked = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 14),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: const Color(0xFF111827),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.white10,
-          ),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x33000000),
-              blurRadius: 12,
-              offset: Offset(0, 6),
-            )
-          ],
-        ),
-        child: Row(
-          children: [
-            /// 🔢 LEVEL BADGE
-            Container(
-              height: 46,
-              width: 46,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Colors.greenAccent, Colors.teal],
+      child: Stack(
+        children: [
+          Container(
+            margin: const EdgeInsets.only(bottom: 14),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFF111827),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  height: 46,
+                  width: 46,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Colors.greenAccent, Colors.teal],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Center(
+                    child: Text(
+                      "$index",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
                 ),
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.greenAccent.withOpacity(0.3),
-                    blurRadius: 10,
-                    spreadRadius: 1,
-                  )
-                ],
-              ),
-              child: Center(
-                child: Text(
-                  "$index",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+
+                const SizedBox(width: 14),
+
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 14,
+                  color: Colors.white30,
+                ),
+              ],
+            ),
+          ),
+
+          if (locked)
+            Positioned.fill(
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 14),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.lock,
+                    color: Colors.white,
+                    size: 28,
                   ),
                 ),
               ),
             ),
-
-            const SizedBox(width: 14),
-
-            /// TITLE
-            Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-
-            const Icon(
-              Icons.arrow_forward_ios,
-              size: 14,
-              color: Colors.white30,
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }

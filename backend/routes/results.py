@@ -1,54 +1,65 @@
 from fastapi import APIRouter
-from models import Result
-from database.database import results_collection, users_collection
+from models import QuestionResult, Result
+from database.database import results_collection, users_collection, db
 
 router = APIRouter(prefix="/results", tags=["Results"])
 
-@router.post("/")
-def save_result(result: Result):
-    print("🔥 RESULT API HIT:", result)
+question_results_collection = db["question_results"]
+test_results_collection = db["test_results"]
 
-    result_data = result.model_dump()  # FIXED
 
-    # 1. Save result
-    insert_result = results_collection.insert_one(result_data)
-    print("Inserted ID:", insert_result.inserted_id)
+@router.post("/question-result")
+def save_question_result(result: QuestionResult):
 
-    # 2. Progress
-    progress = result.score / result.total if result.total > 0 else 0
+    results_collection.insert_one({
+        "uid": result.user_id,
+        "chapter": result.chapter,
+        "score": result.score,
+        "wrong_answers": result.wrong_answers,
+    })
 
-    # 3. Update user stats
+    return {"message": "question saved"}
+
+@router.post("/chapter-result")
+def save_chapter_result(result: Result):
+
+    data = result.model_dump()
+
+    accuracy = 0
+    if result.total > 0:
+        accuracy = result.score / result.total
+
+    # store FINAL TEST RESULT
+    test_results_collection.insert_one({
+        "uid": result.user_id,
+        "chapter": result.chapter,
+        "score": result.score,
+        "total": result.total,
+        "accuracy": accuracy,
+        "wrong_answers": data.get("wrong_answers", [])
+    })
+
+    # update user stats
     users_collection.update_one(
-        {"user_id": result.user_id},
+        {"uid": result.user_id},
         {
             "$inc": {
                 "testsTaken": 1,
                 "totalScore": result.score
             },
-            "$set": {
-                "lastChapter": f"Chapter {result.chapter}",
-                "progress": progress
+            "$push": {
+                "chapterProgress": {
+                    "chapter": result.chapter,
+                    "score": result.score,
+                    "total": result.total,
+                    "accuracy": accuracy
+                }
             }
         },
         upsert=True
     )
 
-    # 4. Mistakes
-    if result.wrong_answers:
-        users_collection.update_one(
-            {"user_id": result.user_id},
-            {
-                "$push": {
-                    "mistakes": {
-                        "$each": result_data["wrong_answers"],
-                        "$slice": -20
-                    }
-                }
-            }
-        )
-
     return {
-        "message": "Result saved successfully",
-        "score": result.score,
-        "progress": progress
+        "message": "chapter saved",
+        "accuracy": accuracy
     }

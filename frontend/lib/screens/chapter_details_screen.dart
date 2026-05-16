@@ -6,8 +6,13 @@ import '../screens/test_screen.dart';
 
 class ChapterDetailScreen extends StatelessWidget {
   final Rule rule;
+  final bool showMissionButton;
 
-  const ChapterDetailScreen({super.key, required this.rule});
+  const ChapterDetailScreen({
+    super.key,
+    required this.rule,
+    this.showMissionButton = true,
+  });
 
   /// 📄 SUBSECTION RENDERER (UNCHANGED LOGIC, CLEAN UI WRAP)
   Widget buildSubsections(dynamic subsection) {
@@ -157,61 +162,49 @@ class ChapterDetailScreen extends StatelessWidget {
           ),
 
           /// 🎮 START MISSION BUTTON (GAMING CTA)
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: SizedBox(
-              width: double.infinity,
-              height: 54,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orangeAccent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                icon: const Icon(Icons.rocket_launch, color: Colors.white),
-                label: const Text(
-                  "START MISSION TEST",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1,
-                  ),
-                ),
-                onPressed: () async {
-                  final user = FirebaseAuth.instance.currentUser;
-
-                  if (user == null) return;
-
-                  if (rule.chapterNumber == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Chapter number missing!"),
-                      ),
-                    );
-                    return;
-                  }
-
-                  // 📘 mark progress
-                  await ApiService.updateChapter(
-                    user.uid,
-                    "Chapter ${rule.chapterNumber} • ${rule.title}",
-                    0.1,
-                  );
-
-                  // 🚀 start test
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => TestScreen(
-                        chapterNumber: rule.chapterNumber!,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+         if (showMissionButton)
+  Padding(
+    padding: const EdgeInsets.all(16),
+    child: SizedBox(
+      width: double.infinity,
+      height: 54,
+      child: ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.orangeAccent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
           ),
+        ),
+        icon: const Icon(Icons.rocket_launch, color: Colors.white),
+        label: const Text(
+          "START MISSION TEST",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1,
+          ),
+        ),
+        onPressed: () async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => TestScreen(
+        chapterNumber: rule.chapterNumber!,
+      ),
+    ),
+  );
+
+  // 🔥 THIS IS THE FIX (force refresh after test)
+  await ApiService.getUnlockedChapters(user.uid);
+
+  Navigator.pop(context, true);
+}
+      ),
+    ),
+  ),
         ],
       ),
     );

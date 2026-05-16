@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flip_card/flip_card.dart';
 import 'package:flutter/material.dart';
 import '../models/questions.dart';
 import '../services/api_service.dart';
@@ -29,6 +30,9 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
 
   bool gameEnded = false;
 
+  final GlobalKey<FlipCardState> flipCardKey =
+      GlobalKey<FlipCardState>();
+
   @override
   void initState() {
     super.initState();
@@ -44,12 +48,15 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
         .toList();
 
     if (!mounted) return;
+
     setState(() {});
+
     startTimer();
   }
 
   void startTimer() {
     timer?.cancel();
+
     timeLeft = 10;
 
     timer = Timer.periodic(const Duration(seconds: 1), (t) {
@@ -67,6 +74,7 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
     timer?.cancel();
 
     streak++;
+
     int bonus = streak >= 3 ? 5 : 0;
 
     score += 10 + bonus;
@@ -89,23 +97,29 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
     nextQuestion();
   }
 
-  void nextQuestion() {
-    Future.delayed(const Duration(milliseconds: 400), () {
-      if (!mounted) return;
+  void nextQuestion() async {
+    await Future.delayed(const Duration(milliseconds: 1200));
 
-      if (currentIndex >= questions.length - 1) {
-        endGame();
-        return;
-      }
+    if (!mounted) return;
 
-      setState(() {
-        currentIndex++;
-        selectedIndex = null;
-        showAnswer = false;
-      });
+    if (flipCardKey.currentState?.isFront == false) {
+      flipCardKey.currentState?.toggleCard();
 
-      startTimer();
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+
+    if (currentIndex >= questions.length - 1) {
+      endGame();
+      return;
+    }
+
+    setState(() {
+      currentIndex++;
+      selectedIndex = null;
+      showAnswer = false;
     });
+
+    startTimer();
   }
 
   void selectAnswer(int index) {
@@ -115,6 +129,8 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
       selectedIndex = index;
       showAnswer = true;
     });
+
+    flipCardKey.currentState?.toggleCard();
 
     final correct = questions[currentIndex].answer;
 
@@ -127,6 +143,7 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
 
   void endGame() async {
     if (gameEnded) return;
+
     gameEnded = true;
 
     timer?.cancel();
@@ -134,7 +151,10 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
     final name = await LocalStorageService.getUserName();
 
     if (name != null) {
-      await ApiService.saveSurvivalScore(name: name, score: score);
+      await ApiService.saveSurvivalScore(
+        name: name,
+        score: score,
+      );
     }
 
     if (!mounted) return;
@@ -152,8 +172,11 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.emoji_events,
-                  size: 80, color: Colors.amber),
+              const Icon(
+                Icons.emoji_events,
+                size: 80,
+                color: Colors.amber,
+              ),
 
               const SizedBox(height: 12),
 
@@ -189,8 +212,12 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
                     Navigator.pop(context);
                     Navigator.pop(context, earnedXp);
                   },
-                  child: const Text("Continue",
-                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    "Continue",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               )
             ],
@@ -206,30 +233,20 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title,
-              style: const TextStyle(color: Colors.white70)),
-          Text(value,
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style: const TextStyle(color: Colors.white70),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
-  }
-
-  Color getColor(int index) {
-    if (!showAnswer) return const Color(0xFF1F2937);
-
-    final correct = questions[currentIndex].answer;
-
-    if (index == correct) {
-      return const Color(0xFF14532D); 
-    }
-
-    if (selectedIndex == index) {
-      return const Color(0xFF7F1D1D); 
-    }
-
-    return const Color(0xFF1F2937);
   }
 
   @override
@@ -237,7 +254,9 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
     if (questions.isEmpty) {
       return const Scaffold(
         backgroundColor: Color(0xFF0B0F1A),
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
       );
     }
 
@@ -248,36 +267,41 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
 
       appBar: AppBar(
         backgroundColor: const Color(0xFF111827),
-        title: const Text("🔥 Survival Mode", style: TextStyle(color: Colors.white),),
+        title: const Text(
+          "🔥 Survival Mode",
+          style: TextStyle(color: Colors.white),
+        ),
       ),
 
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: List.generate(
                     3,
                     (i) => Icon(
                       Icons.favorite,
-                      color: i < lives ? Colors.redAccent : Colors.white10,
+                      color: i < lives
+                          ? Colors.redAccent
+                          : Colors.white10,
                     ),
                   ),
                 ),
                 Text(
                   "Score: $score",
-                  style: const TextStyle(color: Colors.white),
+                  style:
+                      const TextStyle(color: Colors.white),
                 ),
               ],
             ),
 
             const SizedBox(height: 12),
 
-            
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: LinearProgressIndicator(
@@ -296,7 +320,9 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFF111827),
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.white10),
+                border: Border.all(
+                  color: Colors.white10,
+                ),
               ),
               child: Text(
                 q.question,
@@ -311,29 +337,132 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
 
             const SizedBox(height: 18),
 
-            
             Expanded(
-              child: ListView.builder(
-                itemCount: q.options.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () => selectAnswer(index),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: getColor(index),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.white10),
+              child: FlipCard(
+                key: flipCardKey,
+                flipOnTouch: false,
+                speed: 500,
+
+                /// FRONT
+                front: ListView.builder(
+                  itemCount: q.options.length,
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () => selectAnswer(index),
+                      child: Container(
+                        margin:
+                            const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1F2937),
+                          borderRadius:
+                              BorderRadius.circular(14),
+                          border: Border.all(
+                            color: Colors.white10,
+                          ),
+                        ),
+                        child: Text(
+                          q.options[index],
+                          style: const TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
-                      child: Text(
-                        q.options[index],
-                        style: const TextStyle(color: Colors.white),
+                    );
+                  },
+                ),
+
+                /// BACK
+                back: SingleChildScrollView(
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(22),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          selectedIndex == q.answer
+                              ? Colors.green.withOpacity(0.25)
+                              : Colors.red.withOpacity(0.25),
+                          Colors.black54,
+                        ],
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(18),
+                      border: Border.all(
+                        color: selectedIndex == q.answer
+                            ? Colors.greenAccent
+                            : Colors.redAccent,
                       ),
                     ),
-                  );
-                },
+                    child: Column(
+                      children: [
+                        Icon(
+                          selectedIndex == q.answer
+                              ? Icons.check_circle
+                              : Icons.cancel,
+                          size: 80,
+                          color: selectedIndex == q.answer
+                              ? Colors.greenAccent
+                              : Colors.redAccent,
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        Text(
+                          selectedIndex == q.answer
+                              ? "Correct Answer 🎉"
+                              : "Wrong Answer ❌",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color:
+                                selectedIndex == q.answer
+                                    ? Colors.greenAccent
+                                    : Colors.redAccent,
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        Container(
+                          width: double.infinity,
+                          padding:
+                              const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.white10,
+                            borderRadius:
+                                BorderRadius.circular(14),
+                          ),
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Correct Answer",
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 12,
+                                ),
+                              ),
+
+                              const SizedBox(height: 6),
+
+                              Text(
+                                q.options[q.answer],
+                                style: const TextStyle(
+                                  color: Colors.greenAccent,
+                                  fontSize: 16,
+                                  fontWeight:
+                                      FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           ],

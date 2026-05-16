@@ -71,6 +71,13 @@ class WrongAnswer(BaseModel):
     topic: str
 
 
+class QuestionResult(BaseModel):
+    user_id: str
+    chapter: int
+    score: int
+    wrong_answers: List[Dict] = []
+
+
 class Result(BaseModel):
     user_id: str
     chapter: int

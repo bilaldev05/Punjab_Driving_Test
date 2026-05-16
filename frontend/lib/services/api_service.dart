@@ -198,21 +198,42 @@ static Future<void> saveSurvivalScore({
     throw Exception("Failed to save survival score");
   }
 }
+
+
 static Future<String> getAiAdvice(String uid) async {
   final res = await http.get(Uri.parse("$baseUrl/ai-coach/$uid"));
 
   final data = jsonDecode(res.body);
   return data["advice"];
 }
-static Future<void> saveResult({
+
+static Future<void> saveQuestionResult({
+  required String userId,
+  required int chapter,
+  required int score,
+  required List<Map<String, dynamic>> wrongAnswers,
+}) async {
+  await http.post(
+    Uri.parse("$baseUrl/results/question-result"),
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({
+      "user_id": userId,
+      "chapter": chapter,
+      "score": score,
+      "wrong_answers": wrongAnswers,
+    }),
+  );
+}
+
+static Future<void> saveChapterResult({
   required String userId,
   required int chapter,
   required int score,
   required int total,
   required List<Map<String, dynamic>> wrongAnswers,
 }) async {
-  final res = await http.post(
-    Uri.parse("$baseUrl/results/"),
+  await http.post(
+    Uri.parse("$baseUrl/results/chapter-result"),
     headers: {"Content-Type": "application/json"},
     body: jsonEncode({
       "user_id": userId,
@@ -222,10 +243,15 @@ static Future<void> saveResult({
       "wrong_answers": wrongAnswers,
     }),
   );
+}
 
-  if (res.statusCode != 200) {
-    print("RESULT SAVE FAILED: ${res.body}");
-  }
+static Future<List<int>> getUnlockedChapters(String uid) async {
+  final res = await http.get(
+    Uri.parse("$baseUrl/users/unlock-status/$uid"),
+  );
+
+  final data = jsonDecode(res.body);
+  return List<int>.from(data["unlockedChapters"]);
 }
 
 }

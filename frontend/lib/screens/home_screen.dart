@@ -132,9 +132,13 @@ class _HomeScreenState extends State<HomeScreen> {
             _QuickNavCard(
               onTap: () {
                 Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const RuleBookScreen()),
-                );
+  context,
+  MaterialPageRoute(
+    builder: (_) => const RuleBookScreen(
+      showMissionButton: false,
+    ),
+  ),
+);
               },
             ),
 
@@ -195,18 +199,22 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 12),
 
             /// 📘 RULE MODE
-            _GameModeCard(
-              title: "RULE BATTLE",
-              subtitle: "Train your driving instincts",
-              icon: Icons.menu_book_rounded,
-              color: Colors.greenAccent,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const RuleBookScreen()),
-                );
-              },
-            ),
+           _GameModeCard(
+  title: "RULE BATTLE",
+  subtitle: "Train your driving instincts",
+  icon: Icons.menu_book_rounded,
+  color: Colors.greenAccent,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const RuleBookScreen(
+          showMissionButton: true, // 🧠 full game mode enabled
+        ),
+      ),
+    );
+  },
+),
 
             const SizedBox(height: 12),
 
