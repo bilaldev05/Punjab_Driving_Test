@@ -212,7 +212,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 const SizedBox(height: 20),
 
-                /// 🕒 RECENT ACTIVITY
+               
                 const Text(
                   "RECENT ACTIVITY",
                   style: TextStyle(
