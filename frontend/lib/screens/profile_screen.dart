@@ -241,7 +241,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 const SizedBox(height: 30),
 
-                /// 🚪 LOGOUT BUTTON
+                
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
