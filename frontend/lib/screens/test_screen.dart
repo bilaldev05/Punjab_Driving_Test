@@ -91,7 +91,7 @@ void nextQuestion() async {
       await Future.delayed(const Duration(milliseconds: 500));
     }
 
-    // 🔥 now safely load next question
+
     setState(() {
       currentIndex++;
       selectedIndex = null;
