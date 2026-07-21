@@ -14,7 +14,7 @@ class ChapterDetailScreen extends StatelessWidget {
     this.showMissionButton = true,
   });
 
-  /// 📄 SUBSECTION RENDERER (UNCHANGED LOGIC, CLEAN UI WRAP)
+  
   Widget buildSubsections(dynamic subsection) {
     if (subsection == null) return const SizedBox.shrink();
 
