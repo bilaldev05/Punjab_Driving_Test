@@ -66,7 +66,7 @@ class ChapterDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0B0F1A),
 
-      /// 🧠 APP BAR (GAMING STYLE)
+      
       appBar: AppBar(
         backgroundColor: const Color(0xFF111827),
         elevation: 0,
