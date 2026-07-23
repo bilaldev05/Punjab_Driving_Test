@@ -84,7 +84,7 @@ class ChapterDetailScreen extends StatelessWidget {
 
       body: Column(
         children: [
-          /// 📘 HERO HEADER (MISSION BRIEF)
+          
           Container(
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(16),
