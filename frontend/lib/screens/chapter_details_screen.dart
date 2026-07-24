@@ -112,7 +112,7 @@ class ChapterDetailScreen extends StatelessWidget {
             ),
           ),
 
-          /// 📄 CONTENT
+          
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
