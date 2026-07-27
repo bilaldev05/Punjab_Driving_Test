@@ -140,7 +140,7 @@ class ChapterDetailScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      /// SECTION TITLE
+                     
                       Text(
                         "Chapter ${section['section']} • ${section['title']}",
                         style: const TextStyle(
