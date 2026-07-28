@@ -152,7 +152,7 @@ class ChapterDetailScreen extends StatelessWidget {
 
                       const SizedBox(height: 10),
 
-                      /// CONTENT
+                     
                       buildSubsections(section['subsections']),
                     ],
                   ),
