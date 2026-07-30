@@ -161,7 +161,6 @@ class ChapterDetailScreen extends StatelessWidget {
             ),
           ),
 
-          /// 🎮 START MISSION BUTTON (GAMING CTA)
          if (showMissionButton)
   Padding(
     padding: const EdgeInsets.all(16),
