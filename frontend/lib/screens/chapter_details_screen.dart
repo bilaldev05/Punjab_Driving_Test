@@ -196,7 +196,7 @@ class ChapterDetailScreen extends StatelessWidget {
     ),
   );
 
-  // 🔥 THIS IS THE FIX (force refresh after test)
+  
   await ApiService.getUnlockedChapters(user.uid);
 
   Navigator.pop(context, true);
