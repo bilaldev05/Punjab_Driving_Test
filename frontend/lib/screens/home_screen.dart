@@ -198,7 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 12),
 
-            /// 📘 RULE MODE
+            
            _GameModeCard(
   title: "RULE BATTLE",
   subtitle: "Train your driving instincts",
