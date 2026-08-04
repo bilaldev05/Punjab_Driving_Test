@@ -209,7 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => const RuleBookScreen(
-          showMissionButton: true, // 🧠 full game mode enabled
+          showMissionButton: true, 
         ),
       ),
     );
