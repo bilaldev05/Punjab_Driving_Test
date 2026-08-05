@@ -218,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 12),
 
-            /// 🔥 SURVIVAL MODE (FIXED RETURN TYPE)
+            
             _GameModeCard(
               title: "SURVIVAL MODE",
               subtitle: "3 lives • endless challenge",
