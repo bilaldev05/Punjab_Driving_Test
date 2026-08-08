@@ -240,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 12),
 
-            /// 🚧 SIGNS
+            
             _GameModeCard(
               title: "SIGN CHALLENGE",
               subtitle: "Learn road signs visually",
