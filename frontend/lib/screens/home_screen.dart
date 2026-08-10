@@ -320,7 +320,7 @@ class _GameHeader extends StatelessWidget {
   }
 }
 
-// ignore: unused_element
+
 class _XPCard extends StatelessWidget {
   final int xp;
   final double progress;
