@@ -52,7 +52,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
         padding: const EdgeInsets.all(16),
         children: [
 
-          /// 🔮 HEADER CARD
+         
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
