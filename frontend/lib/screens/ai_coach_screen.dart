@@ -84,7 +84,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
 
           const SizedBox(height: 16),
 
-          /// 📊 STATUS CARD
+          
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
