@@ -108,7 +108,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
 
           const SizedBox(height: 16),
 
-          /// 🧠 AI RESPONSE
+      
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(18),
