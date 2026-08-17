@@ -145,7 +145,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
 
           const SizedBox(height: 20),
 
-          /// 🔁 REFRESH BUTTON
+          
           SizedBox(
             width: double.infinity,
             height: 52,
