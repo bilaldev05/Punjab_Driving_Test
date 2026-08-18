@@ -164,7 +164,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
 
           const SizedBox(height: 12),
 
-          /// 💡 TIP CARD
+          
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
