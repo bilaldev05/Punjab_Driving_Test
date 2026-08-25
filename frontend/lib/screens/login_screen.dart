@@ -205,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 20),
 
-                /// TOGGLE
+                
                 TextButton(
                   onPressed: () => setState(() => isLogin = !isLogin),
                   child: Text(
