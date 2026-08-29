@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppTheme {
   /// 🌿 PREMIUM SOFT PALETTE (SAAS / APPLE STYLE)
 
-  // Primary (soft indigo-blue, not harsh blue)
+  
   static const Color primary = Color(0xFF6C8CFF);
 
   // Secondary accent (warm coral pastel)
