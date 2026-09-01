@@ -12,7 +12,7 @@ class AppTheme {
   
   static const Color background = Color(0xFFF6F7FB);
 
-  // Surface (cards)
+  
   static const Color surface = Color(0xFFFFFFFF);
 
   // Soft muted grey (inputs, borders)
