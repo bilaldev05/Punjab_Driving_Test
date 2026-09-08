@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  /// 🌿 PREMIUM SOFT PALETTE (SAAS / APPLE STYLE)
+  
 
   
   static const Color primary = Color(0xFF6C8CFF);
