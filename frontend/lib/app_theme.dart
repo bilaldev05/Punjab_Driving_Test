@@ -6,7 +6,7 @@ class AppTheme {
   
   static const Color primary = Color(0xFF6C8CFF);
 
-  // Secondary accent (warm coral pastel)
+  
   static const Color secondary = Color(0xFFFFB38A);
 
   
