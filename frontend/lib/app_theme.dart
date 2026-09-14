@@ -15,7 +15,7 @@ class AppTheme {
   
   static const Color surface = Color(0xFFFFFFFF);
 
-  // Soft muted grey (inputs, borders)
+  
   static const Color muted = Color(0xFFEAECEF);
 
   // Text primary (deep soft black)
