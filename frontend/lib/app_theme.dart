@@ -18,7 +18,7 @@ class AppTheme {
   
   static const Color muted = Color(0xFFEAECEF);
 
-  // Text primary (deep soft black)
+  
   static const Color textPrimary = Color(0xFF1F2937);
 
   // Text secondary (muted)
