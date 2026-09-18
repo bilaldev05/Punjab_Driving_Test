@@ -21,7 +21,7 @@ class AppTheme {
   
   static const Color textPrimary = Color(0xFF1F2937);
 
-  // Text secondary (muted)
+
   static const Color textSecondary = Color(0xFF6B7280);
 
   // Success / warning soft tones
