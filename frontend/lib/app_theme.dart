@@ -22,9 +22,7 @@ class AppTheme {
   static const Color textPrimary = Color(0xFF1F2937);
 
 
-  static const Color textSecondary = Color(0xFF6B7280);
-
-  // Success / warning soft tones
+  static const Color textSecondary = Color(0xFF6B7280)
   static const Color success = Color(0xFF34D399);
   static const Color warning = Color(0xFFFBBF24);
   static const Color error = Color(0xFFFB7185);
