@@ -27,7 +27,6 @@ class AppTheme {
   static const Color warning = Color(0xFFFBBF24);
   static const Color error = Color(0xFFFB7185);
 
-  /// 🧠 MAIN THEME
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
 
