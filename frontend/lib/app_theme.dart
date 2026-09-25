@@ -40,7 +40,6 @@ class AppTheme {
       error: error,
     ),
 
-    /// 📝 TEXT SYSTEM (VERY CLEAN + MODERN)
     textTheme: const TextTheme(
       headlineLarge: TextStyle(
         fontSize: 30,
