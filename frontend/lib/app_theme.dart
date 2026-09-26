@@ -69,7 +69,7 @@ class AppTheme {
       ),
     ),
 
-    /// 🧱 APP BAR (CLEAN GLASS LOOK)
+  
     appBarTheme: const AppBarTheme(
       elevation: 0,
       centerTitle: true,
