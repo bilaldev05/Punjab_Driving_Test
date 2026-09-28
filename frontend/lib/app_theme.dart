@@ -82,7 +82,7 @@ class AppTheme {
       ),
     ),
 
-    /// 🔘 BUTTONS (SOFT + PREMIUM)
+    
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: primary,
