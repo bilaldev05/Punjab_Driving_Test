@@ -110,7 +110,6 @@ class AppTheme {
       margin: EdgeInsets.symmetric(vertical: 8),
     ),
 
-    /// 📦 INPUT FIELDS (MODERN SOFT INPUTS)
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: muted,
