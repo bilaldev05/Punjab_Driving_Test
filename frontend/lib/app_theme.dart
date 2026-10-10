@@ -144,7 +144,7 @@ class AppTheme {
       size: 22,
     ),
 
-    /// 🔲 DIVIDER (VERY SUBTLE)
+    
     dividerTheme: const DividerThemeData(
       color: Color(0xFFEDEFF3),
       thickness: 1,
