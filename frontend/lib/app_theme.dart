@@ -150,7 +150,7 @@ class AppTheme {
       thickness: 1,
     ),
 
-    /// 💡 EXTRA POLISH (TOUCH FEEL)
+    
     splashFactory: InkRipple.splashFactory,
   );
 }
