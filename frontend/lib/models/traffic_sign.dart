@@ -1,7 +1,7 @@
 // models/traffic_sign.dart
 class TrafficSign {
-  final String name;        // question in English
-  final String nameUr;      // question in Urdu
+  final String name;        
+  final String nameUr;      
   final String image;
   final String optionA;
   final String optionAUr;
