@@ -133,7 +133,7 @@ class ChapterDetailScreen extends StatelessWidget {
                       BoxShadow(
                         color: Color(0x33000000),
                         blurRadius: 10,
-                        offset: Offset(0, 6),
+                        offset: Offset(0, 8),
                       )
                     ],
                   ),
