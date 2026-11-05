@@ -20,14 +20,14 @@ class ChapterProgress {
 
 class User {
   final String name;
-  final String email; // ✅ ADD THIS
+  final String email; 
   final int totalScore;
   final int testsTaken;
   final List<ChapterProgress> progress;
 
   User({
     required this.name,
-    required this.email, // ✅ ADD THIS
+    required this.email, 
     required this.totalScore,
     required this.testsTaken,
     required this.progress,
