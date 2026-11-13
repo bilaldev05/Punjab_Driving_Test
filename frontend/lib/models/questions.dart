@@ -10,7 +10,7 @@ class Question {
     required this.question,
     required this.options,
     required this.answer,
-    required this.topic, // ✅ ADD THIS
+    required this.topic, 
   });
 
   factory Question.fromJson(Map<String, dynamic> json, {bool shuffle = true}) {
