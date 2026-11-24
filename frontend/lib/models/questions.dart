@@ -3,7 +3,7 @@ import 'dart:math';
 class Question {
   final String question;
   final List<String> options;
-  final String topic; // ✅ ADD THIS
+  final String topic; 
   int answer;
 
   Question({
